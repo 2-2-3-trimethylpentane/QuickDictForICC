@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AssemblyName>QuickDictForICC</AssemblyName>
+    <RootNamespace>QuickDictForICC</RootNamespace>
+    <!-- 将 NuGet 依赖（含传递依赖）复制到生成输出目录，确保 ICC 调试加载时能找到 NAudio 等程序集 -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- 设置为 true 可在编译后自动打包 .icpx 插件包 -->
+    <CreateIcpx>false</CreateIcpx>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
+    <PackageReference Include="iNKORE.UI.WPF" Version="1.2.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="System.Text.Json" Version="6.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="InkCanvas.PluginSdk">
+      <HintPath>lib\InkCanvas.PluginSdk.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="InkCanvas.Controls">
+      <HintPath>lib\InkCanvas.Controls.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- 自动将 manifest.json 复制到输出目录 -->
+  <ItemGroup>
+    <None Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+{
+  "Id": "quickdict.plugin",
+  "Name": "QuickDict 查词",
+  "Version": "1.0.0",
+  "Description": "英语单词查询插件，支持 ECDICT 与用户导入的 MDict 词典，集成 Edge TTS 与 Piper TTS",
+  "Author": "QuickDict",
+  "EntranceAssembly": "QuickDictForICC.dll",
+  "ApiVersion": "1.0.0",
+  "Icon": "",
+  "Url": ""
+}

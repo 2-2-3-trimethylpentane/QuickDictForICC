@@ -1,0 +1,257 @@
+<UserControl x:Class="QuickDictForICC.Views.ResultView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="720" d:DesignWidth="640"
+             Background="White">
+    <UserControl.Resources>
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Background" Value="#F0F0F0"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                CornerRadius="10"
+                                SnapsToDevicePixels="True">
+                            <Border x:Name="BackgroundBorder"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="10"
+                                    Margin="0">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True"/>
+                            </Border>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BackgroundBorder" Property="Background" Value="#E0E0E0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="BackgroundBorder" Property="Background" Value="#C8C8C8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="BackgroundBorder" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="Padding" Value="24,0"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#006CBD"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#005A9E"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TabControl" x:Key="ResultTabControl">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E8E8E8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <Style TargetType="TabItem" x:Key="ResultTabItem">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Border"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0,0,0,3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4"/>
+                                <Setter Property="Foreground" Value="#0078D4"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#F5F5F5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 单词标题区 -->
+        <Border Grid.Row="0"
+                Padding="28,24"
+                BorderBrush="#E8E8E8"
+                BorderThickness="0,0,0,1">
+            <DockPanel LastChildFill="False">
+                <TextBlock x:Name="WordText"
+                           DockPanel.Dock="Left"
+                           FontSize="44"
+                           FontWeight="Bold"
+                           Foreground="#222222"
+                           VerticalAlignment="Center"/>
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <TextBlock x:Name="PhoneticText"
+                               FontSize="22"
+                               Foreground="#666666"
+                               VerticalAlignment="Center"
+                               Margin="0,0,16,0"/>
+                    <Button x:Name="SpeakButton"
+                            Style="{StaticResource IconButton}"
+                            ToolTip="朗读">
+                        <TextBlock Text="&#xE767;"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   FontSize="22"
+                                   Foreground="#333333"/>
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- 标签页区 -->
+        <TabControl Grid.Row="1"
+                    x:Name="ResultTabs"
+                    Style="{StaticResource ResultTabControl}"
+                    Background="White">
+            <TabItem Header="释义" Style="{StaticResource ResultTabItem}">
+                <Grid Background="White">
+                    <wv2:WebView2 x:Name="DefinitionWebView"
+                                  Visibility="Collapsed"/>
+                    <ScrollViewer x:Name="TextDefinitionScroll"
+                                  Visibility="Collapsed"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="28,20">
+                            <TextBlock x:Name="PosText"
+                                       FontSize="20"
+                                       FontWeight="SemiBold"
+                                       Foreground="#0078D4"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,16"/>
+                            <TextBlock x:Name="DefinitionText"
+                                       FontSize="20"
+                                       Foreground="#333333"
+                                       TextWrapping="Wrap"
+                                       LineHeight="32"
+                                       Margin="0,0,0,16"/>
+                            <TextBlock x:Name="TranslationText"
+                                       FontSize="20"
+                                       Foreground="#333333"
+                                       TextWrapping="Wrap"
+                                       LineHeight="32"
+                                       Margin="0,0,0,16"/>
+                            <TextBlock x:Name="ExchangeText"
+                                       FontSize="18"
+                                       Foreground="#666666"
+                                       TextWrapping="Wrap"
+                                       LineHeight="30"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="词组" Style="{StaticResource ResultTabItem}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <TextBlock x:Name="PhrasesText"
+                               Text="暂无词组"
+                               FontSize="20"
+                               Foreground="#888888"
+                               Margin="28,20"
+                               TextWrapping="Wrap"
+                               LineHeight="32"/>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="例句" Style="{StaticResource ResultTabItem}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <TextBlock Text="暂无例句"
+                               FontSize="20"
+                               Foreground="#888888"
+                               Margin="28,20"
+                               TextWrapping="Wrap"
+                               LineHeight="32"/>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="近义词" Style="{StaticResource ResultTabItem}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <TextBlock Text="暂无近义词"
+                               FontSize="20"
+                               Foreground="#888888"
+                               Margin="28,20"
+                               TextWrapping="Wrap"
+                               LineHeight="32"/>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- 底部操作栏 -->
+        <Border Grid.Row="3"
+                Padding="28,20"
+                BorderBrush="#E8E8E8"
+                BorderThickness="0,1,0,0">
+            <Button x:Name="GenerateCardButton"
+                    Content="生成单词卡"
+                    Style="{StaticResource ActionButton}"
+                    HorizontalAlignment="Right"/>
+        </Border>
+    </Grid>
+</UserControl>

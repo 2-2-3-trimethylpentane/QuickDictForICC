@@ -1,6 +1,13 @@
 # QuickDictForICC
 
-QuickDictForICC 是 [InkCanvasForClass](https://github.com/InkCanvas/InkCanvasForClass)（ICC）的英语单词查询插件，支持 ECDICT 离线词典与用户自行导入的 MDict 词典，并内置 Edge TTS 与 Piper 本地 TTS 发音功能。
+QuickDictForICC 是 [InkCanvasForClass](https://github.com/InkCanvasForClass/community)（ICC-CE）的英语单词查询插件，支持 ECDICT 离线词典与用户自行导入的 MDict 词典，并内置 Edge TTS 与 Piper 本地 TTS 发音功能。
+
+>[!warning]
+>项目处于早期开发阶段，目前只能确保插件实例能运行，核心功能尚未完全实现且极度不稳定。现阶段请不要将本插件用于生产环境，感谢您的理解。   
+
+>[!note]
+>本readme文档内容一部分为AI自动撰写，部分内容可能有误，欢迎勘误。   
+
 
 ## 功能简介
 
@@ -113,4 +120,4 @@ QuickDictForICC/
 
 ## License
 
-本项目采用 GPLv3.0 许可证，详见 [LICENSE](LICENSE)。
+本项目采用 GPL-3.0 许可证，详见 [LICENSE](LICENSE)。

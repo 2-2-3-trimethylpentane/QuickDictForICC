@@ -5,6 +5,7 @@ using QuickDictForICC.Services;
 using QuickDictForICC.Views;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -24,6 +25,8 @@ namespace QuickDictForICC
         private System.Threading.Tasks.Task _dictionaryLoadTask;
         private TtsService _ttsService;
         private SettingsView _settingsView;
+        private DictionaryWindow _dictionaryWindow;
+        private ResolveEventHandler _assemblyResolveHandler;
 
         // 元数据（Id/Name/Version/Description/Author）从 manifest.json 自动读取，无需在代码中重复定义
 
@@ -31,6 +34,9 @@ namespace QuickDictForICC
         {
             base.Initialize(host, services);
             _host = host;
+
+            _assemblyResolveHandler = (sender, args) => ResolvePluginAssembly(args);
+            AppDomain.CurrentDomain.AssemblyResolve += _assemblyResolveHandler;
 
             try
             {
@@ -74,6 +80,12 @@ namespace QuickDictForICC
 
         public override void Shutdown()
         {
+            if (_assemblyResolveHandler != null)
+            {
+                AppDomain.CurrentDomain.AssemblyResolve -= _assemblyResolveHandler;
+                _assemblyResolveHandler = null;
+            }
+
             try
             {
                 _dictionaryLoadCts?.Cancel();
@@ -204,15 +216,14 @@ namespace QuickDictForICC
             {
                 Id = "quickdict.button",
                 DisplayName = "QuickDict 查词",
-                Description = "打开 QuickDict 英语单词查询弹窗",
+                Description = "打开 QuickDict 英语单词查询窗口",
                 IconGeometry = searchIconPath,
                 ViewFactory = () => CreateToolbarButton(searchIconPath),
                 ApplyOrientation = (view, orientation) =>
                 {
                     if (view is ToolbarImageButton btn)
                         btn.ApplyOrientation(orientation == Orientation.Vertical);
-                },
-                PopupContentFactory = CreatePopupContent
+                }
             });
         }
 
@@ -236,6 +247,8 @@ namespace QuickDictForICC
                     IconGeometryDrawing = drawing
                 };
 
+                button.ButtonMouseUp += (s, e) => ShowOrActivateDictionaryWindow();
+
                 return button;
             }
             catch (Exception ex)
@@ -250,39 +263,61 @@ namespace QuickDictForICC
             }
         }
 
-        private FrameworkElement CreatePopupContent()
+        private void ShowOrActivateDictionaryWindow()
         {
             try
             {
-                var resultView = new ResultView();
-                resultView.SetTtsService(_ttsService);
-                resultView.SetTtsOptions(_settings.ToTtsOptions());
-
-                var popup = new DictionaryPopup();
-                popup.SetDictionaryService(_dictionaryService);
-                popup.SetTtsService(_ttsService);
-                popup.SetResultView(resultView);
-                popup.SetLoadingTask(_dictionaryLoadTask);
-                popup.SetTitleBarVisible(false);
-
-                var shell = new PopupShellContent
+                if (_dictionaryWindow == null || !_dictionaryWindow.IsVisible)
                 {
-                    Title = "QuickDict 查词",
-                    InnerContent = popup
-                };
+                    _dictionaryWindow = new DictionaryWindow(
+                        _dictionaryService,
+                        _ttsService,
+                        _dictionaryLoadTask,
+                        _settings);
 
-                return shell;
+                    _dictionaryWindow.Closed += (s, e) => _dictionaryWindow = null;
+                    _dictionaryWindow.Show();
+                }
+                else
+                {
+                    _dictionaryWindow.Activate();
+                    _dictionaryWindow.Focus();
+                }
             }
             catch (Exception ex)
             {
-                _host?.LogError("创建 QuickDict 弹窗内容时出错", ex);
-                return new System.Windows.Controls.TextBlock
-                {
-                    Text = "QuickDict 弹窗初始化失败：" + ex.Message,
-                    Margin = new System.Windows.Thickness(20),
-                    TextWrapping = System.Windows.TextWrapping.Wrap
-                };
+                _host?.LogError("打开 QuickDict 查词窗口失败", ex);
             }
+        }
+
+        private Assembly ResolvePluginAssembly(ResolveEventArgs args)
+        {
+            if (string.IsNullOrWhiteSpace(args?.Name))
+                return null;
+
+            string assemblyName = new AssemblyName(args.Name).Name;
+            string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (string.IsNullOrWhiteSpace(pluginDir))
+                return null;
+
+            // Only resolve NAudio-related assemblies from the plugin directory.
+            if (!assemblyName.StartsWith("NAudio", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            string assemblyPath = Path.Combine(pluginDir, assemblyName + ".dll");
+            if (File.Exists(assemblyPath))
+            {
+                try
+                {
+                    return Assembly.LoadFrom(assemblyPath);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            return null;
         }
 
         private T GetServiceOrDefault<T>() where T : class

@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace QuickDictForICC.Views
@@ -27,6 +28,8 @@ namespace QuickDictForICC.Views
         public SettingsView(PluginSettings settings, IPluginHost host = null, Action onSettingsSaved = null)
         {
             InitializeComponent();
+
+            RootScrollViewer.PreviewMouseWheel += RootScrollViewer_PreviewMouseWheel;
 
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _host = host;
@@ -253,6 +256,15 @@ namespace QuickDictForICC.Views
         private static int Clamp(int value, int min, int max)
         {
             return value < min ? min : (value > max ? max : value);
+        }
+
+        private void RootScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (sender is ScrollViewer scrollViewer)
+            {
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
+                e.Handled = true;
+            }
         }
     }
 }

@@ -57,7 +57,7 @@ namespace QuickDictForICC.Views
             WordText.Text = entry.Word ?? string.Empty;
             PhoneticText.Text = string.IsNullOrWhiteSpace(entry.Phonetic)
                 ? string.Empty
-                : string.Format("/{0}/", entry.Phonetic);
+                : string.Format("[{0}]", entry.Phonetic);
 
             if (!string.IsNullOrWhiteSpace(entry.HtmlDefinition))
             {
@@ -114,12 +114,12 @@ namespace QuickDictForICC.Views
                 DefinitionText.Text = "无法渲染 MDict HTML（WebView2 可能未安装）：" + ex.Message;
                 DefinitionText.Visibility = Visibility.Visible;
 
-                TranslationText.Text = _currentEntry?.Translation ?? string.Empty;
+                TranslationText.Text = (_currentEntry?.Translation ?? string.Empty).Replace("\n", Environment.NewLine);
                 TranslationText.Visibility = string.IsNullOrWhiteSpace(TranslationText.Text)
                     ? Visibility.Collapsed
                     : Visibility.Visible;
 
-                ExchangeText.Text = _currentEntry?.Exchange ?? string.Empty;
+                ExchangeText.Text = (_currentEntry?.Exchange ?? string.Empty).Replace("\n", Environment.NewLine);
                 ExchangeText.Visibility = string.IsNullOrWhiteSpace(ExchangeText.Text)
                     ? Visibility.Collapsed
                     : Visibility.Visible;
@@ -136,17 +136,17 @@ namespace QuickDictForICC.Views
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            DefinitionText.Text = entry.Definition ?? string.Empty;
+            DefinitionText.Text = (entry.Definition ?? string.Empty).Replace("\n", Environment.NewLine);
             DefinitionText.Visibility = string.IsNullOrWhiteSpace(DefinitionText.Text)
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            TranslationText.Text = entry.Translation ?? string.Empty;
+            TranslationText.Text = (entry.Translation ?? string.Empty).Replace("\n", Environment.NewLine);
             TranslationText.Visibility = string.IsNullOrWhiteSpace(TranslationText.Text)
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            ExchangeText.Text = entry.Exchange ?? string.Empty;
+            ExchangeText.Text = (entry.Exchange ?? string.Empty).Replace("\n", Environment.NewLine);
             ExchangeText.Visibility = string.IsNullOrWhiteSpace(ExchangeText.Text)
                 ? Visibility.Collapsed
                 : Visibility.Visible;

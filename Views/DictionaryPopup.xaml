@@ -9,10 +9,10 @@
     <UserControl.Resources>
         <Style x:Key="PopupButtonBase" TargetType="Button">
             <Setter Property="FontSize" Value="16"/>
-            <Setter Property="MinWidth" Value="44"/>
-            <Setter Property="MinHeight" Value="44"/>
-            <Setter Property="Margin" Value="3"/>
-            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="MinWidth" Value="38"/>
+            <Setter Property="MinHeight" Value="42"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Padding" Value="6,4"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Background" Value="#F0F0F0"/>
             <Setter Property="Foreground" Value="#333333"/>
@@ -48,20 +48,95 @@
         </Style>
 
         <Style x:Key="KeyButton" TargetType="Button" BasedOn="{StaticResource PopupButtonBase}">
-            <Setter Property="MinWidth" Value="44"/>
-            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="MinWidth" Value="38"/>
+            <Setter Property="MinHeight" Value="42"/>
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="Medium"/>
         </Style>
 
         <Style x:Key="FunctionKeyButton" TargetType="Button" BasedOn="{StaticResource KeyButton}">
             <Setter Property="Background" Value="#E3E3E3"/>
-            <Setter Property="MinWidth" Value="70"/>
+            <Setter Property="MinWidth" Value="60"/>
+        </Style>
+
+        <Style x:Key="GreenSearchButton" TargetType="Button" BasedOn="{StaticResource PopupButtonBase}">
+            <Setter Property="Background" Value="#00A86B"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="MinWidth" Value="110"/>
+            <Setter Property="MinHeight" Value="46"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#009B63"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#008C5A"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="SuggestionButton" TargetType="Button" BasedOn="{StaticResource PopupButtonBase}">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="MinHeight" Value="34"/>
+        </Style>
+
+        <Style x:Key="ScrollArrowButton" TargetType="Button" BasedOn="{StaticResource PopupButtonBase}">
+            <Setter Property="MinWidth" Value="28"/>
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <Style x:Key="ClearButton" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Background" Value="#BDBDBD"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="12"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#9E9E9E"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#757575"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -76,27 +151,37 @@
             </Grid.RowDefinitions>
 
             <!-- 标题栏 -->
-            <Grid x:Name="TitleBarGrid" Grid.Row="0" Height="48" Background="#F8F8F8">
+            <Grid x:Name="TitleBarGrid" Grid.Row="0" Height="56" Background="White">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                    <TextBlock Text="英汉字典"
+                <Border Grid.Column="0"
+                        Width="32"
+                        Height="32"
+                        CornerRadius="8"
+                        Background="#FF8C00"
+                        Margin="16,0,10,0"
+                        VerticalAlignment="Center">
+                    <TextBlock Text="A"
                                FontSize="18"
-                               FontWeight="SemiBold"
-                               Foreground="#333333"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
                                VerticalAlignment="Center"/>
-                    <TextBlock Text="QuickDict"
-                               FontSize="12"
-                               Foreground="#888888"
-                               VerticalAlignment="Center"
-                               Margin="8,2,0,0"/>
-                </StackPanel>
+                </Border>
+
+                <TextBlock Grid.Column="1"
+                           Text="英汉字典"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Foreground="#333333"
+                           VerticalAlignment="Center"/>
 
                 <Button x:Name="CloseButton"
-                        Grid.Column="1"
+                        Grid.Column="2"
                         Content="&#xE711;"
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="12"
@@ -127,83 +212,60 @@
             </Grid>
 
             <!-- 搜索区 -->
-            <Grid Grid.Row="1" Margin="12,12,12,8">
+            <Border Grid.Row="1" Margin="16,8,16,8"
+                    Background="#F5F5F5"
+                    BorderBrush="#E5E5E5"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="4">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="SearchTextBox"
+                             Grid.Column="0"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             FontSize="24"
+                             FontWeight="Bold"
+                             VerticalContentAlignment="Center"
+                             Padding="12,6"
+                             Foreground="#333333"
+                             CaretBrush="#333333"
+                             Text=""/>
+
+                    <Button x:Name="ClearButton"
+                            Grid.Column="1"
+                            Content="&#xE894;"
+                            FontFamily="Segoe MDL2 Assets"
+                            Style="{StaticResource ClearButton}"
+                            ToolTip="清空"
+                            Margin="8,0,12,0"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- 候选词条区 -->
+            <Grid Grid.Row="2" Margin="12,0,12,8" Height="50">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0"
-                        Background="#F5F5F5"
-                        BorderBrush="#DDDDDD"
-                        BorderThickness="1"
-                        CornerRadius="10"
-                        Padding="8,4">
-                    <Grid>
-                        <TextBox x:Name="SearchTextBox"
-                                 Background="Transparent"
-                                 BorderThickness="0"
-                                 FontSize="16"
-                                 VerticalContentAlignment="Center"
-                                 Padding="8,4"
-                                 Foreground="#333333"
-                                 CaretBrush="#333333"
-                                 Text=""/>
-                    </Grid>
-                </Border>
-
-                <Button x:Name="ClearButton"
-                        Grid.Column="1"
-                        Content="&#xE894;"
+                <Button x:Name="SuggestionsScrollLeft"
+                        Grid.Column="0"
+                        Content="&#xE76B;"
                         FontFamily="Segoe MDL2 Assets"
-                        Style="{StaticResource PopupButtonBase}"
-                        ToolTip="清空"
-                        Margin="8,0,0,0"/>
+                        Style="{StaticResource ScrollArrowButton}"
+                        Click="SuggestionsScrollLeft_Click"
+                        ToolTip="向左滚动"/>
 
-                <Button x:Name="SearchButton"
-                        Grid.Column="2"
-                        Content="&#xE721;"
-                        FontFamily="Segoe MDL2 Assets"
-                        ToolTip="搜索"
-                        Margin="8,0,0,0">
-                    <Button.Style>
-                        <Style BasedOn="{StaticResource PopupButtonBase}" TargetType="Button">
-                            <Setter Property="Background" Value="#0078D4"/>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Border"
-                                                Background="{TemplateBinding Background}"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                CornerRadius="8"
-                                                SnapsToDevicePixels="True">
-                                            <ContentPresenter HorizontalAlignment="Center"
-                                                              VerticalAlignment="Center"
-                                                              RecognizesAccessKey="True"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Border" Property="Background" Value="#106EBE"/>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter TargetName="Border" Property="Background" Value="#005A9E"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Button.Style>
-                </Button>
-            </Grid>
-
-            <!-- 候选词条区 -->
-            <Border Grid.Row="2" Margin="12,0,12,8" Height="46">
                 <ScrollViewer x:Name="SuggestionsScrollViewer"
-                              HorizontalScrollBarVisibility="Auto"
+                              Grid.Column="1"
+                              HorizontalScrollBarVisibility="Hidden"
                               VerticalScrollBarVisibility="Disabled"
                               PanningMode="HorizontalOnly">
                     <StackPanel x:Name="SuggestionsPanel"
@@ -212,7 +274,15 @@
                         <!-- 动态生成建议按钮 -->
                     </StackPanel>
                 </ScrollViewer>
-            </Border>
+
+                <Button x:Name="SuggestionsScrollRight"
+                        Grid.Column="2"
+                        Content="&#xE76C;"
+                        FontFamily="Segoe MDL2 Assets"
+                        Style="{StaticResource ScrollArrowButton}"
+                        Click="SuggestionsScrollRight_Click"
+                        ToolTip="向右滚动"/>
+            </Grid>
 
             <!-- 结果内容区 -->
             <Border Grid.Row="3"
@@ -313,13 +383,12 @@
                     <Button x:Name="SpaceButton"
                             Content="Space"
                             Style="{StaticResource FunctionKeyButton}"
-                            MinWidth="180"
+                            MinWidth="160"
                             Click="SpaceButton_Click"
                             ToolTip="空格"/>
                     <Button x:Name="KeyboardSearchButton"
-                            Content="&#xE721;"
-                            FontFamily="Segoe MDL2 Assets"
-                            Style="{StaticResource FunctionKeyButton}"
+                            Content="搜索"
+                            Style="{StaticResource GreenSearchButton}"
                             Click="SearchButton_Click"
                             ToolTip="搜索"/>
                 </StackPanel>

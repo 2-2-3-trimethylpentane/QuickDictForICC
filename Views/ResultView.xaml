@@ -54,7 +54,7 @@
             <Setter Property="Padding" Value="24,0"/>
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Background" Value="#00A86B"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -73,10 +73,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#006CBD"/>
+                                <Setter TargetName="Border" Property="Background" Value="#008F5B"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#005A9E"/>
+                                <Setter TargetName="Border" Property="Background" Value="#00784A"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
@@ -113,8 +113,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4"/>
-                                <Setter Property="Foreground" Value="#0078D4"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#00A86B"/>
+                                <Setter Property="Foreground" Value="#00A86B"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Border" Property="Background" Value="#F5F5F5"/>
@@ -136,13 +136,13 @@
 
         <!-- 单词标题区 -->
         <Border Grid.Row="0"
-                Padding="28,24"
+                Padding="24,16"
                 BorderBrush="#E8E8E8"
                 BorderThickness="0,0,0,1">
             <DockPanel LastChildFill="False">
                 <TextBlock x:Name="WordText"
                            DockPanel.Dock="Left"
-                           FontSize="44"
+                           FontSize="36"
                            FontWeight="Bold"
                            Foreground="#222222"
                            VerticalAlignment="Center"/>
@@ -150,24 +150,26 @@
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
                     <TextBlock x:Name="PhoneticText"
-                               FontSize="22"
+                               FontSize="18"
                                Foreground="#666666"
                                VerticalAlignment="Center"
-                               Margin="0,0,16,0"/>
+                               Margin="0,0,8,0"/>
                     <Button x:Name="SpeakButton"
                             Style="{StaticResource IconButton}"
+                            Width="36"
+                            Height="36"
                             ToolTip="朗读">
                         <TextBlock Text="&#xE767;"
                                    FontFamily="Segoe MDL2 Assets"
-                                   FontSize="22"
-                                   Foreground="#333333"/>
+                                   FontSize="18"
+                                   Foreground="#00A86B"/>
                     </Button>
                 </StackPanel>
             </DockPanel>
         </Border>
 
         <!-- 标签页区 -->
-        <TabControl Grid.Row="1"
+        <TabControl Grid.Row="2"
                     x:Name="ResultTabs"
                     Style="{StaticResource ResultTabControl}"
                     Background="White">
@@ -183,7 +185,7 @@
                             <TextBlock x:Name="PosText"
                                        FontSize="20"
                                        FontWeight="SemiBold"
-                                       Foreground="#0078D4"
+                                       Foreground="#00A86B"
                                        TextWrapping="Wrap"
                                        Margin="0,0,0,16"/>
                             <TextBlock x:Name="DefinitionText"

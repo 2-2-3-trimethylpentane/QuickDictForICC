@@ -43,7 +43,6 @@ namespace QuickDictForICC.Views
         {
             InitializeComponent();
 
-            SearchButton.Click += SearchButton_Click;
             ClearButton.Click += ClearButton_Click;
             CloseButton.Click += CloseButton_Click;
 
@@ -108,7 +107,6 @@ namespace QuickDictForICC.Views
         private void UpdateLoadingState(bool isLoading)
         {
             LoadingOverlay.Visibility = isLoading ? Visibility.Visible : Visibility.Collapsed;
-            SearchButton.IsEnabled = !isLoading;
             KeyboardSearchButton.IsEnabled = !isLoading;
             SearchTextBox.IsEnabled = !isLoading;
 
@@ -149,7 +147,6 @@ namespace QuickDictForICC.Views
 
         /// <summary>
         /// 设置内置标题栏是否可见。
-        /// 当使用 ICC 的 PopupShellContent 等外部容器时，可隐藏内置标题栏。
         /// </summary>
         /// <param name="visible">是否显示标题栏。</param>
         public void SetTitleBarVisible(bool visible)
@@ -378,6 +375,16 @@ namespace QuickDictForICC.Views
                 SearchTextBox.Focus();
                 Search();
             }
+        }
+
+        private void SuggestionsScrollLeft_Click(object sender, RoutedEventArgs e)
+        {
+            SuggestionsScrollViewer?.LineLeft();
+        }
+
+        private void SuggestionsScrollRight_Click(object sender, RoutedEventArgs e)
+        {
+            SuggestionsScrollViewer?.LineRight();
         }
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)

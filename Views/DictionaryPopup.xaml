@@ -53,6 +53,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- 标题栏 -->
@@ -160,7 +161,7 @@
 
             <!-- 结果内容区 -->
             <Border Grid.Row="3"
-                    Margin="12,0,12,8"
+                    Margin="12,0,12,0"
                     Background="#FAFAFA"
                     BorderBrush="#E5E5E5"
                     BorderThickness="1"
@@ -271,6 +272,25 @@
                             ToolTip="{x:Static p:Resources.DictionaryPopup_SearchButton}"/>
                 </StackPanel>
             </Grid>
+
+            <!-- 生成单词卡按钮 -->
+            <Border Grid.Row="5"
+                    Margin="12,8,12,12"
+                    Padding="16,12"
+                    Background="#FAFAFA"
+                    BorderBrush="#E5E5E5"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                <Button x:Name="GenerateCardButton"
+                        Content="{x:Static p:Resources.ResultView_GenerateCard}"
+                        Style="{DynamicResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"
+                        Height="48"
+                        Padding="24,0"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Right"
+                        IsEnabled="False"/>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

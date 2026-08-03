@@ -46,6 +46,7 @@ namespace QuickDictForICC.Views
 
             ClearButton.Click += OnClearButtonClick;
             CloseButton.Click += OnCloseButtonClick;
+            GenerateCardButton.Click += (s, e) => _resultView?.GenerateWordCard();
 
             SearchTextBox.KeyDown += OnSearchTextBoxKeyDown;
             SearchTextBox.TextChanged += OnSearchTextBoxTextChanged;
@@ -205,6 +206,7 @@ namespace QuickDictForICC.Views
                 ShowMessage(string.Format(Properties.Resources.Message_WordNotFound_Format, input));
             }
 
+            GenerateCardButton.IsEnabled = LastResult != null;
             ResultReady?.Invoke(this, result);
             RefreshSuggestions(input);
         }
@@ -435,6 +437,8 @@ namespace QuickDictForICC.Views
 
         private void ShowEmptyResult()
         {
+            GenerateCardButton.IsEnabled = false;
+
             if (_resultView != null)
             {
                 ResultContentHost.Content = _resultView;
@@ -454,6 +458,8 @@ namespace QuickDictForICC.Views
 
         private void ShowMessage(string message)
         {
+            GenerateCardButton.IsEnabled = false;
+
             ResultContentHost.Content = new TextBlock
             {
                 Text = message,

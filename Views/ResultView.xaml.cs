@@ -24,7 +24,14 @@ namespace QuickDictForICC.Views
         {
             InitializeComponent();
             SpeakButton.Click += OnSpeakButtonClick;
-            GenerateCardButton.Click += OnGenerateCardButtonClick;
+        }
+
+        /// <summary>
+        /// 触发"生成单词卡"逻辑。
+        /// </summary>
+        public void GenerateWordCard()
+        {
+            OnGenerateCardButtonClick(this, new RoutedEventArgs());
         }
 
         /// <summary>

@@ -1,14 +1,17 @@
 using Ink_Canvas.Controls;
 using Ink_Canvas.Plugins;
 using Microsoft.Extensions.DependencyInjection;
+using QuickDictForICC.Properties;
 using QuickDictForICC.Services;
 using QuickDictForICC.Views;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using iNKORE.UI.WPF.Modern.Controls;
 
 namespace QuickDictForICC
 {
@@ -27,6 +30,7 @@ namespace QuickDictForICC
         private SettingsView _settingsView;
         private DictionaryWindow _dictionaryWindow;
         private ResolveEventHandler _assemblyResolveHandler;
+        private static XamlControlsResources _xamlControlsResources;
 
         // 元数据（Id/Name/Version/Description/Author）从 manifest.json 自动读取，无需在代码中重复定义
 
@@ -40,12 +44,21 @@ namespace QuickDictForICC
 
             try
             {
+                InitializeThemeResources();
+            }
+            catch (Exception ex)
+            {
+                host?.LogError(Resources.Message_InitializeThemeResourcesFailed, ex);
+            }
+
+            try
+            {
                 _settings = SettingsManager.Load();
             }
             catch (Exception ex)
             {
                 _settings = new PluginSettings();
-                host?.LogError("加载 QuickDict 设置失败，已使用默认设置", ex);
+                host?.LogError(Resources.Message_LoadSettingsFailed, ex);
             }
 
             try
@@ -54,7 +67,7 @@ namespace QuickDictForICC
             }
             catch (Exception ex)
             {
-                host?.LogError("初始化 QuickDict 服务失败", ex);
+                host?.LogError(Resources.Message_InitializeServicesFailed, ex);
             }
 
             try
@@ -63,7 +76,7 @@ namespace QuickDictForICC
             }
             catch (Exception ex)
             {
-                host?.LogError("初始化 QuickDict 设置面板失败", ex);
+                host?.LogError(Resources.Message_InitializeSettingsViewFailed, ex);
             }
 
             try
@@ -72,10 +85,10 @@ namespace QuickDictForICC
             }
             catch (Exception ex)
             {
-                host?.LogError("注册 QuickDict 工具栏按钮失败", ex);
+                host?.LogError(Resources.Message_RegisterToolbarItemFailed, ex);
             }
 
-            Log(string.Format("{0} 已初始化", Name));
+            Log(string.Format(Resources.Message_PluginInitialized_Format, Name));
         }
 
         public override void Shutdown()
@@ -94,7 +107,7 @@ namespace QuickDictForICC
             }
             catch (Exception ex)
             {
-                _host?.LogError("取消 QuickDict 词典加载任务时出错", ex);
+                _host?.LogError(Resources.Message_CancelDictionaryLoadFailed, ex);
             }
 
             try
@@ -103,10 +116,22 @@ namespace QuickDictForICC
             }
             catch (Exception ex)
             {
-                _host?.LogError("关闭 QuickDict TTS 服务时出错", ex);
+                _host?.LogError(Resources.Message_DisposeTtsServiceFailed, ex);
             }
 
-            Log(string.Format("{0} 已关闭", Name));
+            try
+            {
+                if (_xamlControlsResources != null && Application.Current != null)
+                {
+                    Application.Current.Resources.MergedDictionaries.Remove(_xamlControlsResources);
+                }
+            }
+            catch (Exception ex)
+            {
+                _host?.LogError(Resources.Message_ShutdownThemeResourcesFailed, ex);
+            }
+
+            Log(string.Format(Resources.Message_PluginShutdown_Format, Name));
         }
 
         public override object GetMainView()
@@ -119,8 +144,35 @@ namespace QuickDictForICC
             return _settingsView;
         }
 
+        private void InitializeThemeResources()
+        {
+            if (Application.Current == null)
+                return;
+
+            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+            {
+                if (dictionary is XamlControlsResources)
+                    return;
+            }
+
+            var resources = new XamlControlsResources();
+            (resources as ISupportInitialize)?.BeginInit();
+            (resources as ISupportInitialize)?.EndInit();
+            _xamlControlsResources = resources;
+            Application.Current.Resources.MergedDictionaries.Add(resources);
+        }
+
         private void InitializeServices()
         {
+            if (string.IsNullOrWhiteSpace(_settings.EcDictPath) || !File.Exists(_settings.EcDictPath))
+            {
+                string builtInEcDict = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "ecdict", "ecdict.csv");
+                if (File.Exists(builtInEcDict))
+                {
+                    _settings.EcDictPath = builtInEcDict;
+                }
+            }
+
             var ecDictService = new EcDictService(_settings.EcDictPath);
             var mdictService = new MDictService(_settings.MDictPath, _settings.MDictResourcePath);
             _dictionaryService = new DictionaryService(mdictService, ecDictService);
@@ -138,11 +190,11 @@ namespace QuickDictForICC
                 }
                 catch (OperationCanceledException)
                 {
-                    _host?.Log("QuickDict 词典加载已取消（可能已超时）。");
+                    _host?.Log(Resources.Message_DictionaryLoadCanceled);
                 }
                 catch (Exception ex)
                 {
-                    _host?.LogError("后台加载 QuickDict 词典数据时出错", ex);
+                    _host?.LogError(Resources.Message_LoadDictionaryFailed, ex);
                 }
             });
 
@@ -168,7 +220,7 @@ namespace QuickDictForICC
                 }
                 catch (Exception ex)
                 {
-                    _host?.LogError("检查 QuickDict 词典可用性时出错", ex);
+                    _host?.LogError(Resources.Message_CheckDictionaryAvailabilityFailed, ex);
                 }
             }, uiScheduler);
         }
@@ -184,12 +236,12 @@ namespace QuickDictForICC
             if (hasEcDict || hasMdict)
                 return;
 
-            string message = "未找到可用的词典文件。请在 QuickDict 设置中配置 ECDICT（ecdict.csv）或 MDict（.mdx）路径。";
+            string message = Resources.Message_DictionaryUnavailable;
 
             try
             {
                 var notificationService = GetServiceOrDefault<INotificationService>();
-                notificationService?.Show("QuickDict 查词", message, NotificationLevel.Warning);
+                notificationService?.Show(Resources.Plugin_DisplayName, message, NotificationLevel.Warning);
             }
             catch
             {
@@ -203,8 +255,8 @@ namespace QuickDictForICC
         {
             _settingsView = new SettingsView(_settings, _host, () =>
             {
-                _host?.Log("QuickDict 设置已保存；词典/TTS 路径变更需重启插件后生效。");
-            });
+                _host?.Log(Resources.Message_SettingsSavedRestartRequired);
+            }, _ttsService);
         }
 
         private void RegisterToolbarItem()
@@ -215,8 +267,8 @@ namespace QuickDictForICC
             _host?.RegisterToolbarItem(new PluginToolbarItemInfo
             {
                 Id = "quickdict.button",
-                DisplayName = "QuickDict 查词",
-                Description = "打开 QuickDict 英语单词查询窗口",
+                DisplayName = Resources.Plugin_DisplayName,
+                Description = Resources.Plugin_Description,
                 IconGeometry = searchIconPath,
                 ViewFactory = () => CreateToolbarButton(searchIconPath),
                 ApplyOrientation = (view, orientation) =>
@@ -243,7 +295,7 @@ namespace QuickDictForICC
 
                 var button = new ToolbarImageButton
                 {
-                    Label = "查词",
+                    Label = Resources.ToolbarButton_Label,
                     IconGeometryDrawing = drawing
                 };
 
@@ -253,11 +305,11 @@ namespace QuickDictForICC
             }
             catch (Exception ex)
             {
-                _host?.LogError("构造 QuickDict 工具栏按钮视图失败", ex);
+                _host?.LogError(Resources.Message_CreateToolbarButtonFailed, ex);
                 // 失败时返回一个退化的 TextBlock，至少保证 BuildView 不返回 null
                 return new System.Windows.Controls.TextBlock
                 {
-                    Text = "QuickDict",
+                    Text = Resources.ToolbarButton_FallbackText,
                     Margin = new Thickness(4)
                 };
             }
@@ -286,7 +338,7 @@ namespace QuickDictForICC
             }
             catch (Exception ex)
             {
-                _host?.LogError("打开 QuickDict 查词窗口失败", ex);
+                _host?.LogError(Resources.Message_OpenDictionaryWindowFailed, ex);
             }
         }
 

@@ -3,7 +3,6 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 
 namespace QuickDictForICC.Views
 {
@@ -38,23 +37,10 @@ namespace QuickDictForICC.Views
             _popup.SetTtsService(ttsService);
             _popup.SetResultView(resultView);
             _popup.SetLoadingTask(loadingTask);
-            _popup.SetTitleBarVisible(false);
+            _popup.SetTitleBarVisible(true);
             _popup.CloseRequested += OnPopupCloseRequested;
 
             MainContentHost.Content = _popup;
-        }
-
-        private void TitleBarGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left)
-            {
-                DragMove();
-            }
-        }
-
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
         }
 
         private void OnPopupCloseRequested(object sender, EventArgs e)

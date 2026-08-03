@@ -1,3 +1,4 @@
+using QuickDictForICC.Properties;
 using QuickDictForICC.Services;
 using System;
 using System.Collections.Generic;
@@ -43,11 +44,11 @@ namespace QuickDictForICC.Views
         {
             InitializeComponent();
 
-            ClearButton.Click += ClearButton_Click;
-            CloseButton.Click += CloseButton_Click;
+            ClearButton.Click += OnClearButtonClick;
+            CloseButton.Click += OnCloseButtonClick;
 
-            SearchTextBox.KeyDown += SearchTextBox_KeyDown;
-            SearchTextBox.TextChanged += SearchTextBox_TextChanged;
+            SearchTextBox.KeyDown += OnSearchTextBoxKeyDown;
+            SearchTextBox.TextChanged += OnSearchTextBoxTextChanged;
         }
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace QuickDictForICC.Views
 
             if (!isLoading)
             {
-                LoadingDetailText.Text = "首次使用或词典较大时需要一些时间";
+                LoadingDetailText.Text = Properties.Resources.DictionaryPopup_LoadingDetail;
             }
         }
 
@@ -170,7 +171,7 @@ namespace QuickDictForICC.Views
 
             if (_dictionaryService == null)
             {
-                ShowMessage("词典服务尚未就绪");
+                ShowMessage(Properties.Resources.Message_DictionaryServiceNotReady);
                 LastResult = null;
                 ResultReady?.Invoke(this, null);
                 return;
@@ -178,7 +179,7 @@ namespace QuickDictForICC.Views
 
             if (_loadingTask != null && !_loadingTask.IsCompleted)
             {
-                ShowMessage("词典正在加载中，请稍后再试");
+                ShowMessage(Properties.Resources.Message_DictionaryLoading);
                 LastResult = null;
                 ResultReady?.Invoke(this, null);
                 return;
@@ -186,7 +187,7 @@ namespace QuickDictForICC.Views
 
             if (!_dictionaryService.IsLoaded)
             {
-                ShowMessage("未找到可用的词典文件。请在 QuickDict 设置中配置词典路径。");
+                ShowMessage(Properties.Resources.Message_DictionaryNotConfigured);
                 LastResult = null;
                 ResultReady?.Invoke(this, null);
                 return;
@@ -201,7 +202,7 @@ namespace QuickDictForICC.Views
             }
             else
             {
-                ShowMessage($"未找到 \"{input}\" 的释义");
+                ShowMessage(string.Format(Properties.Resources.Message_WordNotFound_Format, input));
             }
 
             ResultReady?.Invoke(this, result);
@@ -306,7 +307,7 @@ namespace QuickDictForICC.Views
                     Style = (Style)FindResource("SuggestionButton"),
                     Tag = suggestion
                 };
-                button.Click += SuggestionButton_Click;
+                button.Click += OnSuggestionButtonClick;
                 SuggestionsPanel.Children.Add(button);
             }
         }
@@ -319,7 +320,7 @@ namespace QuickDictForICC.Views
             SuggestionsPanel.Children.Clear();
         }
 
-        private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void OnSearchTextBoxKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
@@ -333,7 +334,7 @@ namespace QuickDictForICC.Views
             Search();
         }
 
-        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        private void OnClearButtonClick(object sender, RoutedEventArgs e)
         {
             SearchTextBox.Clear();
             SearchTextBox.Focus();
@@ -343,7 +344,7 @@ namespace QuickDictForICC.Views
             ResultReady?.Invoke(this, null);
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
@@ -366,7 +367,7 @@ namespace QuickDictForICC.Views
             AppendText(" ");
         }
 
-        private void SuggestionButton_Click(object sender, RoutedEventArgs e)
+        private void OnSuggestionButtonClick(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is string word)
             {
@@ -387,9 +388,18 @@ namespace QuickDictForICC.Views
             SuggestionsScrollViewer?.LineRight();
         }
 
-        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void OnSearchTextBoxTextChanged(object sender, TextChangedEventArgs e)
         {
-            // 后续可在此实现实时候选词提示。
+            string text = SearchTextBox.Text?.Trim() ?? string.Empty;
+
+            if (text.Length < 2 || _dictionaryService == null || !_dictionaryService.IsLoaded)
+            {
+                ClearSuggestions();
+                return;
+            }
+
+            var suggestions = _dictionaryService.GetSuggestions(text, 10);
+            SetSuggestions(suggestions);
         }
 
         private void AppendText(string text)
@@ -434,7 +444,7 @@ namespace QuickDictForICC.Views
 
             ResultContentHost.Content = new TextBlock
             {
-                Text = "请输入单词开始查询",
+                Text = Properties.Resources.DictionaryPopup_EmptyHint,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Foreground = System.Windows.Media.Brushes.Gray,
@@ -470,7 +480,7 @@ namespace QuickDictForICC.Views
                 Style = (Style)FindResource("SuggestionButton"),
                 Tag = input
             };
-            button.Click += SuggestionButton_Click;
+            button.Click += OnSuggestionButtonClick;
             SuggestionsPanel.Children.Add(button);
         }
     }

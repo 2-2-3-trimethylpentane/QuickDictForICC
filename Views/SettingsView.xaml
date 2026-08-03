@@ -3,273 +3,107 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:p="clr-namespace:QuickDictForICC.Properties"
+             xmlns:ui="clr-namespace:iNKORE.UI.WPF.Modern.Controls;assembly=iNKORE.UI.WPF.Modern.Controls"
+             xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
              mc:Ignorable="d"
-             d:DesignHeight="720" d:DesignWidth="640"
-             Background="White">
-    <UserControl.Resources>
-        <Style x:Key="CardBorder" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="0,0,0,20"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect ShadowDepth="1"
-                                      BlurRadius="6"
-                                      Color="#20000000"
-                                      Opacity="0.2"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="SectionHeader" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="18"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
-        </Style>
-
-        <Style x:Key="SettingLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#555555"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="PathTextBox" TargetType="TextBox">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="BorderBrush" Value="#D0D0D0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="#FAFAFA"/>
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4"
-                                SnapsToDevicePixels="True">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="{TemplateBinding Padding}"
-                                          Focusable="False"
-                                          HorizontalScrollBarVisibility="Hidden"
-                                          VerticalScrollBarVisibility="Hidden"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="BrowseButton" TargetType="Button">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="Margin" Value="8,0,0,0"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#0078D4"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="6"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#106EBE"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#005A9E"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="ActionButton" TargetType="Button">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="20,10"/>
-            <Setter Property="Margin" Value="0,8,8,0"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F0F0F0"/>
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#E0E0E0"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#C8C8C8"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="PrimaryActionButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
-            <Setter Property="Background" Value="#0078D4"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#106EBE"/>
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#005A9E"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
-
+             d:DesignHeight="720" d:DesignWidth="640">
     <ScrollViewer x:Name="RootScrollViewer"
                   VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
                   Padding="28,20">
         <StackPanel>
-            <TextBlock Text="QuickDict 设置"
+            <TextBlock Text="{x:Static p:Resources.Settings_Title}"
                        FontSize="28"
                        FontWeight="Bold"
                        Foreground="#222222"
                        Margin="0,0,0,8"/>
-            <TextBlock Text="配置词典路径与 TTS 发音选项。修改路径后需重启插件生效。"
+            <TextBlock Text="{x:Static p:Resources.Settings_Description}"
                        FontSize="13"
                        Foreground="#888888"
                        TextWrapping="Wrap"
                        Margin="0,0,0,16"/>
 
-            <!-- 词典设置 -->
-            <Border Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <TextBlock Text="词典" Style="{StaticResource SectionHeader}"/>
+            <ui:SettingsExpander Header="{x:Static p:Resources.Settings_Section_Dictionary}"
+                                 IsExpanded="True"
+                                 Margin="0,0,0,16">
+                <ui:SettingsExpander.Items>
+                    <ui:SettingsCard Header="{x:Static p:Resources.Settings_EcDictPathHeader}"
+                                     Description="{x:Static p:Resources.Settings_EcDictPathDescription}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="EcDictPathTextBox"
+                                     Grid.Column="0"
+                                     IsReadOnly="True"/>
+                            <Button x:Name="BrowseEcDictButton"
+                                    Grid.Column="1"
+                                    Content="{x:Static p:Resources.Settings_BrowseButton}"
+                                    Margin="8,0,0,0"/>
+                        </Grid>
+                    </ui:SettingsCard>
 
-                    <TextBlock Text="ECDICT 文件路径（ecdict.csv）" Style="{StaticResource SettingLabel}"/>
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox x:Name="EcDictPathTextBox"
-                                 Grid.Column="0"
-                                 Style="{StaticResource PathTextBox}"
-                                 IsReadOnly="True"/>
-                        <Button x:Name="BrowseEcDictButton"
-                                Grid.Column="1"
-                                Content="浏览..."
-                                Style="{StaticResource BrowseButton}"/>
-                    </Grid>
+                    <ui:SettingsCard Header="{x:Static p:Resources.Settings_MDictPathHeader}"
+                                     Description="{x:Static p:Resources.Settings_MDictPathDescription}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="MDictPathTextBox"
+                                     Grid.Column="0"
+                                     IsReadOnly="True"/>
+                            <Button x:Name="BrowseMDictButton"
+                                    Grid.Column="1"
+                                    Content="{x:Static p:Resources.Settings_BrowseButton}"
+                                    Margin="8,0,0,0"/>
+                        </Grid>
+                    </ui:SettingsCard>
 
-                    <TextBlock Text="MDict 词典路径（.mdx）" Style="{StaticResource SettingLabel}"/>
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox x:Name="MDictPathTextBox"
-                                 Grid.Column="0"
-                                 Style="{StaticResource PathTextBox}"
-                                 IsReadOnly="True"/>
-                        <Button x:Name="BrowseMDictButton"
-                                Grid.Column="1"
-                                Content="浏览..."
-                                Style="{StaticResource BrowseButton}"/>
-                    </Grid>
+                    <ui:SettingsCard Header="{x:Static p:Resources.Settings_MDictResourcePathHeader}"
+                                     Description="{x:Static p:Resources.Settings_MDictResourcePathDescription}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="MDictResourcePathTextBox"
+                                     Grid.Column="0"
+                                     IsReadOnly="True"/>
+                            <Button x:Name="BrowseMDictResourceButton"
+                                    Grid.Column="1"
+                                    Content="{x:Static p:Resources.Settings_BrowseButton}"
+                                    Margin="8,0,0,0"/>
+                        </Grid>
+                    </ui:SettingsCard>
+                </ui:SettingsExpander.Items>
+            </ui:SettingsExpander>
 
-                    <TextBlock Text="MDict 资源包路径（.mdd，可选）" Style="{StaticResource SettingLabel}"/>
-                    <Grid Margin="0,0,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox x:Name="MDictResourcePathTextBox"
-                                 Grid.Column="0"
-                                 Style="{StaticResource PathTextBox}"
-                                 IsReadOnly="True"/>
-                        <Button x:Name="BrowseMDictResourceButton"
-                                Grid.Column="1"
-                                Content="浏览..."
-                                Style="{StaticResource BrowseButton}"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- TTS 设置 -->
-            <Border Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <TextBlock Text="语音朗读（TTS）" Style="{StaticResource SectionHeader}"/>
-
-                    <TextBlock Text="TTS 引擎" Style="{StaticResource SettingLabel}"/>
-                    <ComboBox x:Name="TtsEngineComboBox"
-                              FontSize="14"
-                              Padding="10,8"
-                              Margin="0,0,0,16"
-                              Background="#FAFAFA"
-                              BorderBrush="#D0D0D0"
-                              BorderThickness="1"
-                              SelectedIndex="0">
-                        <ComboBoxItem Content="Edge TTS（在线）"/>
-                        <ComboBoxItem Content="Piper TTS（离线）"/>
-                    </ComboBox>
-
-                    <Grid x:Name="EdgeSettingsPanel">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0"
-                                   Text="Edge 音色"
-                                   Style="{StaticResource SettingLabel}"/>
-                        <ComboBox x:Name="EdgeVoiceComboBox"
-                                  Grid.Row="1"
-                                  FontSize="14"
-                                  Padding="10,8"
-                                  Margin="0,0,0,16"
-                                  Background="#FAFAFA"
-                                  BorderBrush="#D0D0D0"
-                                  BorderThickness="1"
-                                  IsEditable="True">
-                            <ComboBoxItem Content="en-US-AriaNeural"/>
-                            <ComboBoxItem Content="en-US-GuyNeural"/>
-                            <ComboBoxItem Content="en-GB-SoniaNeural"/>
-                            <ComboBoxItem Content="en-US-EmmaMultilingualNeural"/>
-                            <ComboBoxItem Content="en-US-JennyNeural"/>
-                            <ComboBoxItem Content="en-GB-RyanNeural"/>
-                            <ComboBoxItem Content="en-AU-NatashaNeural"/>
+            <ui:SettingsExpander Header="{x:Static p:Resources.Settings_Section_Tts}"
+                                 IsExpanded="True">
+                <ui:SettingsExpander.Items>
+                    <ui:SettingsCard Header="{x:Static p:Resources.Settings_TtsEngineHeader}">
+                        <ComboBox x:Name="TtsEngineComboBox" SelectedIndex="0">
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_TtsEngine_Edge}"/>
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_TtsEngine_Piper}"/>
                         </ComboBox>
+                    </ui:SettingsCard>
 
-                        <TextBlock Grid.Row="2"
-                                   Text="Edge 语速"
-                                   Style="{StaticResource SettingLabel}"/>
-                        <Grid Grid.Row="3" Margin="0,0,0,0">
+                    <ui:SettingsCard x:Name="EdgeVoiceCard" Header="{x:Static p:Resources.Settings_EdgeVoiceHeader}">
+                        <ComboBox x:Name="EdgeVoiceComboBox" IsEditable="True">
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_EdgeVoice_AriaNeural}"/>
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_EdgeVoice_GuyNeural}"/>
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_EdgeVoice_SoniaNeural}"/>
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_EdgeVoice_EmmaMultilingualNeural}"/>
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_EdgeVoice_JennyNeural}"/>
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_EdgeVoice_RyanNeural}"/>
+                            <ComboBoxItem Content="{x:Static p:Resources.Settings_EdgeVoice_NatashaNeural}"/>
+                        </ComboBox>
+                    </ui:SettingsCard>
+                    <ui:SettingsCard x:Name="EdgeRateCard" Header="{x:Static p:Resources.Settings_EdgeRateHeader}">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -284,80 +118,79 @@
                                     VerticalAlignment="Center"/>
                             <TextBlock x:Name="EdgeRateValueText"
                                        Grid.Column="1"
-                                       Text="+0%"
-                                       FontSize="14"
-                                       Foreground="#333333"
+                                       Text="{x:Static p:Resources.Settings_EdgeRateDefault}"
                                        MinWidth="48"
                                        TextAlignment="Right"
                                        VerticalAlignment="Center"
                                        Margin="12,0,0,0"/>
                         </Grid>
-                    </Grid>
-
-                    <Grid x:Name="PiperSettingsPanel" Visibility="Collapsed">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0"
-                                   Text="Piper 可执行文件路径（piper.exe）"
-                                   Style="{StaticResource SettingLabel}"/>
-                        <Grid Grid.Row="1" Margin="0,0,0,16">
+                    </ui:SettingsCard>
+                    <ui:SettingsCard x:Name="PiperExecutableCard"
+                                     Header="{x:Static p:Resources.Settings_PiperExecutableHeader}"
+                                     Description="piper.exe">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="PiperExecutablePathTextBox"
                                      Grid.Column="0"
-                                     Style="{StaticResource PathTextBox}"
                                      IsReadOnly="True"/>
                             <Button x:Name="BrowsePiperExecutableButton"
                                     Grid.Column="1"
-                                    Content="浏览..."
-                                    Style="{StaticResource BrowseButton}"/>
+                                    Content="{x:Static p:Resources.Settings_BrowseButton}"
+                                    Margin="8,0,0,0"/>
                         </Grid>
-
-                        <TextBlock Grid.Row="2"
-                                   Text="Piper 模型路径（.onnx）"
-                                   Style="{StaticResource SettingLabel}"/>
-                        <Grid Grid.Row="3" Margin="0,0,0,0">
+                    </ui:SettingsCard>
+                    <ui:SettingsCard x:Name="PiperModelCard"
+                                     Header="{x:Static p:Resources.Settings_PiperModelHeader}"
+                                     Description=".onnx">
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="PiperModelPathTextBox"
                                      Grid.Column="0"
-                                     Style="{StaticResource PathTextBox}"
                                      IsReadOnly="True"/>
                             <Button x:Name="BrowsePiperModelButton"
                                     Grid.Column="1"
-                                    Content="浏览..."
-                                    Style="{StaticResource BrowseButton}"/>
+                                    Content="{x:Static p:Resources.Settings_BrowseButton}"
+                                    Margin="8,0,0,0"/>
                         </Grid>
-                    </Grid>
-                </StackPanel>
-            </Border>
+                    </ui:SettingsCard>
 
-            <!-- 操作按钮 -->
+                    <ui:SettingsCard Header="{x:Static p:Resources.Settings_TestTtsHeader}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TtsTestTextBox"
+                                     Grid.Column="0"
+                                     Text="{x:Static p:Resources.Settings_TestTextDefault}"/>
+                            <Button x:Name="TestTtsButton"
+                                    Grid.Column="1"
+                                    Content="{x:Static p:Resources.Settings_TestTtsButton}"
+                                    Margin="8,0,0,0"/>
+                        </Grid>
+                    </ui:SettingsCard>
+                </ui:SettingsExpander.Items>
+            </ui:SettingsExpander>
+
             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                 <Button x:Name="SaveButton"
-                        Content="保存设置"
-                        Style="{StaticResource PrimaryActionButton}"/>
+                        Content="{x:Static p:Resources.Settings_SaveButton}"
+                        Margin="0,0,8,0"/>
                 <Button x:Name="ClearCacheButton"
-                        Content="清除 TTS 缓存"
-                        Style="{StaticResource ActionButton}"/>
+                        Content="{x:Static p:Resources.Settings_ClearCacheButton}"/>
             </StackPanel>
 
-            <!-- 状态文本 -->
             <TextBlock x:Name="StatusText"
                        Text=""
                        FontSize="14"
                        Foreground="#888888"
-                       TextWrapping="Wrap"
-                       Margin="0,16,0,0"/>
+                       TextWrapping="Wrap"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

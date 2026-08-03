@@ -1,3 +1,4 @@
+using QuickDictForICC.Properties;
 using QuickDictForICC.Services;
 using System;
 using System.Windows;
@@ -22,8 +23,8 @@ namespace QuickDictForICC.Views
         public ResultView()
         {
             InitializeComponent();
-            SpeakButton.Click += SpeakButton_Click;
-            GenerateCardButton.Click += GenerateCardButton_Click;
+            SpeakButton.Click += OnSpeakButtonClick;
+            GenerateCardButton.Click += OnGenerateCardButtonClick;
         }
 
         /// <summary>
@@ -40,6 +41,15 @@ namespace QuickDictForICC.Views
         public void SetTtsOptions(TtsOptions options)
         {
             _ttsOptions = options;
+        }
+
+        private static string NormalizeNewlines(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
+            // First replace literal "\\n" (two characters), then actual newline characters.
+            return text.Replace("\\n", Environment.NewLine).Replace("\n", Environment.NewLine).Replace("\r", string.Empty);
         }
 
         /// <summary>
@@ -69,7 +79,7 @@ namespace QuickDictForICC.Views
             }
 
             PhrasesText.Text = string.IsNullOrWhiteSpace(entry.Exchange)
-                ? "暂无词组"
+                ? Properties.Resources.ResultView_NoPhrases
                 : entry.Exchange;
 
             ResultTabs.SelectedIndex = 0;
@@ -85,7 +95,7 @@ namespace QuickDictForICC.Views
             DefinitionText.Text = string.Empty;
             TranslationText.Text = string.Empty;
             ExchangeText.Text = string.Empty;
-            PhrasesText.Text = "暂无词组";
+            PhrasesText.Text = Properties.Resources.ResultView_NoPhrases;
         }
 
         private async void ShowHtmlDefinition(string html)
@@ -111,15 +121,15 @@ namespace QuickDictForICC.Views
                 PosText.Text = string.Empty;
                 PosText.Visibility = Visibility.Collapsed;
 
-                DefinitionText.Text = "无法渲染 MDict HTML（WebView2 可能未安装）：" + ex.Message;
+                DefinitionText.Text = string.Format(Properties.Resources.ResultView_HtmlRenderError_Format, ex.Message);
                 DefinitionText.Visibility = Visibility.Visible;
 
-                TranslationText.Text = (_currentEntry?.Translation ?? string.Empty).Replace("\n", Environment.NewLine);
+                TranslationText.Text = NormalizeNewlines(_currentEntry?.Translation ?? string.Empty);
                 TranslationText.Visibility = string.IsNullOrWhiteSpace(TranslationText.Text)
                     ? Visibility.Collapsed
                     : Visibility.Visible;
 
-                ExchangeText.Text = (_currentEntry?.Exchange ?? string.Empty).Replace("\n", Environment.NewLine);
+                ExchangeText.Text = NormalizeNewlines(_currentEntry?.Exchange ?? string.Empty);
                 ExchangeText.Visibility = string.IsNullOrWhiteSpace(ExchangeText.Text)
                     ? Visibility.Collapsed
                     : Visibility.Visible;
@@ -136,23 +146,23 @@ namespace QuickDictForICC.Views
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            DefinitionText.Text = (entry.Definition ?? string.Empty).Replace("\n", Environment.NewLine);
+            DefinitionText.Text = NormalizeNewlines(entry.Definition ?? string.Empty);
             DefinitionText.Visibility = string.IsNullOrWhiteSpace(DefinitionText.Text)
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            TranslationText.Text = (entry.Translation ?? string.Empty).Replace("\n", Environment.NewLine);
+            TranslationText.Text = NormalizeNewlines(entry.Translation ?? string.Empty);
             TranslationText.Visibility = string.IsNullOrWhiteSpace(TranslationText.Text)
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            ExchangeText.Text = (entry.Exchange ?? string.Empty).Replace("\n", Environment.NewLine);
+            ExchangeText.Text = NormalizeNewlines(entry.Exchange ?? string.Empty);
             ExchangeText.Visibility = string.IsNullOrWhiteSpace(ExchangeText.Text)
                 ? Visibility.Collapsed
                 : Visibility.Visible;
         }
 
-        private async void SpeakButton_Click(object sender, RoutedEventArgs e)
+        private async void OnSpeakButtonClick(object sender, RoutedEventArgs e)
         {
             if (_ttsService == null || _currentEntry == null)
                 return;
@@ -171,14 +181,14 @@ namespace QuickDictForICC.Views
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    string.Format("朗读失败：{0}", ex.Message),
-                    "提示",
+                    string.Format(Properties.Resources.Message_SpeakFailed_Format, ex.Message),
+                    Properties.Resources.MessageBox_Title_Notice,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
         }
 
-        private void GenerateCardButton_Click(object sender, RoutedEventArgs e)
+        private void OnGenerateCardButtonClick(object sender, RoutedEventArgs e)
         {
             if (GenerateWordCardRequested != null)
             {
@@ -187,8 +197,8 @@ namespace QuickDictForICC.Views
             else
             {
                 MessageBox.Show(
-                    "生成单词卡功能即将上线",
-                    "提示",
+                    Properties.Resources.Message_WordCardComingSoon,
+                    Properties.Resources.MessageBox_Title_Notice,
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
             }

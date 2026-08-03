@@ -46,13 +46,42 @@ foreach ($item in $items) {
     }
 }
 
+function New-ZipFromDirectory {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceDirectory,
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationPath
+    )
+
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+    if (Test-Path $DestinationPath) {
+        Remove-Item $DestinationPath -Force
+    }
+
+    $archive = [System.IO.Compression.ZipFile]::Open($DestinationPath, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        $sourceFullName = (Get-Item $SourceDirectory).FullName
+        $files = Get-ChildItem -Path $SourceDirectory -Recurse -File
+        foreach ($file in $files) {
+            $relativePath = $file.FullName.Substring($sourceFullName.Length + 1).Replace('\', '/')
+            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $file.FullName, $relativePath, [System.IO.Compression.CompressionLevel]::Optimal) | Out-Null
+        }
+    }
+    finally {
+        $archive.Dispose()
+    }
+}
+
 # Package as .icpx (ZIP)
 $icpxName = "$pluginId.icpx"
 $zipPath = Join-Path $packagesDir ($pluginId + ".zip")
 $icpxPath = Join-Path $packagesDir $icpxName
 
 if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
-Compress-Archive -Path (Join-Path $tempDir '*') -DestinationPath $zipPath -Force
+New-ZipFromDirectory -SourceDirectory $tempDir -DestinationPath $zipPath
 
 if (Test-Path $icpxPath) { Remove-Item $icpxPath -Force }
 Rename-Item $zipPath $icpxName

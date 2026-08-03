@@ -1,5 +1,6 @@
 using Ink_Canvas.Plugins;
 using Microsoft.Win32;
+using QuickDictForICC.Properties;
 using QuickDictForICC.Services;
 using System;
 using System.IO;
@@ -18,6 +19,7 @@ namespace QuickDictForICC.Views
         private readonly IPluginHost _host;
         private readonly PluginSettings _settings;
         private readonly Action _onSettingsSaved;
+        private readonly TtsService _ttsService;
 
         /// <summary>
         /// 初始化设置视图。
@@ -25,26 +27,28 @@ namespace QuickDictForICC.Views
         /// <param name="settings">当前设置实例；视图会修改该实例并保存到磁盘。</param>
         /// <param name="host">插件主机，用于记录日志；可为空。</param>
         /// <param name="onSettingsSaved">保存成功后的回调；可为空。</param>
-        public SettingsView(PluginSettings settings, IPluginHost host = null, Action onSettingsSaved = null)
+        public SettingsView(PluginSettings settings, IPluginHost host = null, Action onSettingsSaved = null, TtsService ttsService = null)
         {
             InitializeComponent();
 
-            RootScrollViewer.PreviewMouseWheel += RootScrollViewer_PreviewMouseWheel;
+            RootScrollViewer.PreviewMouseWheel += OnRootScrollViewerPreviewMouseWheel;
 
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _host = host;
             _onSettingsSaved = onSettingsSaved;
+            _ttsService = ttsService;
 
             // 代码后置挂接事件，避免 XAML 初始化阶段触发事件时控件尚未构造。
-            TtsEngineComboBox.SelectionChanged += TtsEngineComboBox_SelectionChanged;
-            EdgeRateSlider.ValueChanged += EdgeRateSlider_ValueChanged;
-            BrowseEcDictButton.Click += BrowseEcDictButton_Click;
-            BrowseMDictButton.Click += BrowseMDictButton_Click;
-            BrowseMDictResourceButton.Click += BrowseMDictResourceButton_Click;
-            BrowsePiperExecutableButton.Click += BrowsePiperExecutableButton_Click;
-            BrowsePiperModelButton.Click += BrowsePiperModelButton_Click;
-            SaveButton.Click += SaveButton_Click;
-            ClearCacheButton.Click += ClearCacheButton_Click;
+            TtsEngineComboBox.SelectionChanged += OnTtsEngineComboBoxSelectionChanged;
+            EdgeRateSlider.ValueChanged += OnEdgeRateSliderValueChanged;
+            BrowseEcDictButton.Click += OnBrowseEcDictButtonClick;
+            BrowseMDictButton.Click += OnBrowseMDictButtonClick;
+            BrowseMDictResourceButton.Click += OnBrowseMDictResourceButtonClick;
+            BrowsePiperExecutableButton.Click += OnBrowsePiperExecutableButtonClick;
+            BrowsePiperModelButton.Click += OnBrowsePiperModelButtonClick;
+            TestTtsButton.Click += OnTestTtsButtonClick;
+            SaveButton.Click += OnSaveButtonClick;
+            ClearCacheButton.Click += OnClearCacheButtonClick;
 
             LoadSettingsIntoUi();
         }
@@ -58,7 +62,7 @@ namespace QuickDictForICC.Views
             TtsEngineComboBox.SelectedIndex = _settings.TtsEngine == TtsEngineType.Piper ? 1 : 0;
             UpdateEnginePanels();
 
-            EdgeVoiceComboBox.Text = _settings.EdgeVoice ?? "en-US-AriaNeural";
+            EdgeVoiceComboBox.Text = _settings.EdgeVoice ?? Properties.Resources.Settings_EdgeVoice_AriaNeural;
             EdgeRateSlider.Value = Clamp(_settings.EdgeRatePercent, -50, 50);
             UpdateRateDisplay();
 
@@ -66,23 +70,25 @@ namespace QuickDictForICC.Views
             PiperModelPathTextBox.Text = _settings.PiperModelPath ?? string.Empty;
         }
 
-        private void TtsEngineComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnTtsEngineComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateEnginePanels();
         }
 
         private void UpdateEnginePanels()
         {
-            // XAML 初始化阶段可能先触发 SelectionChanged，此时面板控件尚未构造完成。
-            if (TtsEngineComboBox == null || EdgeSettingsPanel == null || PiperSettingsPanel == null)
+            // XAML 初始化阶段可能先触发 SelectionChanged，此时卡片控件尚未构造完成。
+            if (TtsEngineComboBox == null || EdgeVoiceCard == null || EdgeRateCard == null || PiperExecutableCard == null || PiperModelCard == null)
                 return;
 
             bool isPiper = TtsEngineComboBox.SelectedIndex == 1;
-            EdgeSettingsPanel.Visibility = isPiper ? Visibility.Collapsed : Visibility.Visible;
-            PiperSettingsPanel.Visibility = isPiper ? Visibility.Visible : Visibility.Collapsed;
+            EdgeVoiceCard.Visibility = isPiper ? Visibility.Collapsed : Visibility.Visible;
+            EdgeRateCard.Visibility = isPiper ? Visibility.Collapsed : Visibility.Visible;
+            PiperExecutableCard.Visibility = isPiper ? Visibility.Visible : Visibility.Collapsed;
+            PiperModelCard.Visibility = isPiper ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void EdgeRateSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void OnEdgeRateSliderValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             UpdateRateDisplay();
         }
@@ -96,45 +102,45 @@ namespace QuickDictForICC.Views
             EdgeRateValueText.Text = $"{value:+#;-#;+0}%";
         }
 
-        private void BrowseEcDictButton_Click(object sender, RoutedEventArgs e)
+        private void OnBrowseEcDictButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = PickFile("选择 ECDICT 数据文件", "CSV 文件|*.csv|所有文件|*.*");
+            string path = PickFile(Properties.Resources.Settings_Dialog_EcDictTitle, Properties.Resources.Settings_Dialog_CsvFilter);
             if (!string.IsNullOrEmpty(path))
             {
                 EcDictPathTextBox.Text = path;
             }
         }
 
-        private void BrowseMDictButton_Click(object sender, RoutedEventArgs e)
+        private void OnBrowseMDictButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = PickFile("选择 MDict 词典文件", "MDict 词典|*.mdx|所有文件|*.*");
+            string path = PickFile(Properties.Resources.Settings_Dialog_MDictTitle, Properties.Resources.Settings_Dialog_MDictFilter);
             if (!string.IsNullOrEmpty(path))
             {
                 MDictPathTextBox.Text = path;
             }
         }
 
-        private void BrowseMDictResourceButton_Click(object sender, RoutedEventArgs e)
+        private void OnBrowseMDictResourceButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = PickFile("选择 MDict 资源包（可选）", "MDict 资源包|*.mdd|所有文件|*.*");
+            string path = PickFile(Properties.Resources.Settings_Dialog_MDictResourceTitle, Properties.Resources.Settings_Dialog_MDictResourceFilter);
             if (!string.IsNullOrEmpty(path))
             {
                 MDictResourcePathTextBox.Text = path;
             }
         }
 
-        private void BrowsePiperExecutableButton_Click(object sender, RoutedEventArgs e)
+        private void OnBrowsePiperExecutableButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = PickFile("选择 Piper 可执行文件", "可执行文件|*.exe|所有文件|*.*");
+            string path = PickFile(Properties.Resources.Settings_Dialog_PiperExecutableTitle, Properties.Resources.Settings_Dialog_ExeFilter);
             if (!string.IsNullOrEmpty(path))
             {
                 PiperExecutablePathTextBox.Text = path;
             }
         }
 
-        private void BrowsePiperModelButton_Click(object sender, RoutedEventArgs e)
+        private void OnBrowsePiperModelButtonClick(object sender, RoutedEventArgs e)
         {
-            string path = PickFile("选择 Piper 语音模型", "ONNX 模型|*.onnx|所有文件|*.*");
+            string path = PickFile(Properties.Resources.Settings_Dialog_PiperModelTitle, Properties.Resources.Settings_Dialog_OnnxFilter);
             if (!string.IsNullOrEmpty(path))
             {
                 PiperModelPathTextBox.Text = path;
@@ -153,7 +159,7 @@ namespace QuickDictForICC.Views
             return dialog.ShowDialog() == true ? dialog.FileName : null;
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        private void OnSaveButtonClick(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -163,11 +169,11 @@ namespace QuickDictForICC.Views
 
                 if (string.IsNullOrEmpty(warning))
                 {
-                    UpdateStatus("设置已保存。", Colors.Green);
+                    UpdateStatus(Properties.Resources.Message_SaveSuccess, Colors.Green);
                 }
                 else
                 {
-                    UpdateStatus($"设置已保存，但检测到以下问题：{warning}", Colors.Orange);
+                    UpdateStatus(string.Format(Properties.Resources.Message_SaveSuccessWithWarning_Format, warning), Colors.Orange);
                 }
 
                 _host?.Log("QuickDict 设置已保存到 " + SettingsManager.FilePath);
@@ -175,7 +181,7 @@ namespace QuickDictForICC.Views
             }
             catch (Exception ex)
             {
-                UpdateStatus($"保存失败：{ex.Message}", Colors.Red);
+                UpdateStatus(string.Format(Properties.Resources.Message_SaveFailed_Format, ex.Message), Colors.Red);
                 _host?.LogError("保存 QuickDict 设置失败", ex);
             }
         }
@@ -187,7 +193,7 @@ namespace QuickDictForICC.Views
             _settings.MDictResourcePath = NormalizePath(MDictResourcePathTextBox.Text);
             _settings.TtsEngine = TtsEngineComboBox.SelectedIndex == 1 ? TtsEngineType.Piper : TtsEngineType.Edge;
             _settings.EdgeVoice = string.IsNullOrWhiteSpace(EdgeVoiceComboBox.Text)
-                ? "en-US-AriaNeural"
+                ? Properties.Resources.Settings_EdgeVoice_AriaNeural
                 : EdgeVoiceComboBox.Text.Trim();
             _settings.EdgeRatePercent = (int)EdgeRateSlider.Value;
             _settings.PiperExecutablePath = NormalizePath(PiperExecutablePathTextBox.Text);
@@ -199,31 +205,74 @@ namespace QuickDictForICC.Views
             return string.IsNullOrWhiteSpace(text) ? null : text.Trim();
         }
 
+        private TtsOptions BuildTtsOptionsFromUi()
+        {
+            TtsEngineType engine = TtsEngineComboBox.SelectedIndex == 1 ? TtsEngineType.Piper : TtsEngineType.Edge;
+            string voice = engine == TtsEngineType.Piper
+                ? Path.GetFileNameWithoutExtension(PiperModelPathTextBox.Text ?? string.Empty)
+                : (string.IsNullOrWhiteSpace(EdgeVoiceComboBox.Text) ? Properties.Resources.Settings_EdgeVoice_AriaNeural : EdgeVoiceComboBox.Text.Trim());
+
+            return new TtsOptions
+            {
+                Engine = engine,
+                Voice = voice,
+                Rate = $"{(int)EdgeRateSlider.Value:+#;-#;+0}%",
+                PiperExecutablePath = NormalizePath(PiperExecutablePathTextBox.Text),
+                PiperModelPath = NormalizePath(PiperModelPathTextBox.Text)
+            };
+        }
+
         private void ValidateSettings(out string warning)
         {
             var builder = new System.Text.StringBuilder();
 
             if (!string.IsNullOrWhiteSpace(_settings.EcDictPath) && !File.Exists(_settings.EcDictPath))
-                builder.Append("ECDICT 文件不存在。");
+                builder.Append(Properties.Resources.Message_ValidateEcDictNotFound);
 
             if (!string.IsNullOrWhiteSpace(_settings.MDictPath) && !File.Exists(_settings.MDictPath))
-                builder.Append("MDict 词典文件不存在。");
+                builder.Append(Properties.Resources.Message_ValidateMDictNotFound);
 
             if (!string.IsNullOrWhiteSpace(_settings.MDictResourcePath) && !File.Exists(_settings.MDictResourcePath))
-                builder.Append("MDict 资源包不存在。");
+                builder.Append(Properties.Resources.Message_ValidateMDictResourceNotFound);
 
             if (_settings.TtsEngine == TtsEngineType.Piper)
             {
                 if (string.IsNullOrWhiteSpace(_settings.PiperExecutablePath) || !File.Exists(_settings.PiperExecutablePath))
-                    builder.Append("Piper 可执行文件路径无效。");
+                    builder.Append(Properties.Resources.Message_ValidatePiperExecutableInvalid);
                 if (string.IsNullOrWhiteSpace(_settings.PiperModelPath) || !File.Exists(_settings.PiperModelPath))
-                    builder.Append("Piper 模型路径无效。");
+                    builder.Append(Properties.Resources.Message_ValidatePiperModelInvalid);
             }
 
             warning = builder.ToString();
         }
 
-        private void ClearCacheButton_Click(object sender, RoutedEventArgs e)
+        private async void OnTestTtsButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (_ttsService == null)
+            {
+                MessageBox.Show(Properties.Resources.Message_TtsServiceNotReady, Properties.Resources.MessageBox_Title_Notice, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            string text = TtsTestTextBox.Text;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                MessageBox.Show(Properties.Resources.Message_TtsTestTextEmpty, Properties.Resources.MessageBox_Title_Notice, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            TtsOptions options = BuildTtsOptionsFromUi();
+            try
+            {
+                await _ttsService.SpeakAsync(text, options);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format(Properties.Resources.Message_TtsTestFailed_Format, ex.Message), Properties.Resources.MessageBox_Title_Notice, MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void OnClearCacheButtonClick(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -231,18 +280,18 @@ namespace QuickDictForICC.Views
                 if (Directory.Exists(cacheDir))
                 {
                     Directory.Delete(cacheDir, true);
-                    UpdateStatus("TTS 缓存已清除。", Colors.Green);
+                    UpdateStatus(Properties.Resources.Message_CacheCleared, Colors.Green);
                 }
                 else
                 {
-                    UpdateStatus("暂无 TTS 缓存。", Colors.Gray);
+                    UpdateStatus(Properties.Resources.Message_NoCache, Colors.Gray);
                 }
 
                 _host?.Log("QuickDict TTS 缓存已清除");
             }
             catch (Exception ex)
             {
-                UpdateStatus($"清除缓存失败：{ex.Message}", Colors.Red);
+                UpdateStatus(string.Format(Properties.Resources.Message_ClearCacheFailed_Format, ex.Message), Colors.Red);
                 _host?.LogError("清除 QuickDict TTS 缓存失败", ex);
             }
         }
@@ -258,7 +307,7 @@ namespace QuickDictForICC.Views
             return value < min ? min : (value > max ? max : value);
         }
 
-        private void RootScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        private void OnRootScrollViewerPreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (sender is ScrollViewer scrollViewer)
             {

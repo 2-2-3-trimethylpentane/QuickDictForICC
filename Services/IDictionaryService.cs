@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace QuickDictForICC.Services
 {
     /// <summary>
@@ -26,5 +28,13 @@ namespace QuickDictForICC.Services
         /// <param name="word">要查询的单词。</param>
         /// <returns>单词条目；未找到时返回 <c>null</c>。</returns>
         IWordEntry Lookup(string word);
+
+        /// <summary>
+        /// 根据前缀获取候选单词列表。
+        /// </summary>
+        /// <param name="prefix">前缀。</param>
+        /// <param name="maxCount">最大返回数量。</param>
+        /// <returns>候选单词集合。</returns>
+        IEnumerable<string> GetSuggestions(string prefix, int maxCount);
     }
 }

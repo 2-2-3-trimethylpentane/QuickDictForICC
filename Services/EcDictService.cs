@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -134,6 +135,22 @@ namespace QuickDictForICC.Services
                 return entry;
 
             return null;
+        }
+
+        /// <summary>
+        /// 根据前缀获取候选单词列表（大小写不敏感）。
+        /// </summary>
+        /// <param name="prefix">前缀。</param>
+        /// <param name="maxCount">最大返回数量。</param>
+        /// <returns>候选单词集合。</returns>
+        public IEnumerable<string> GetSuggestions(string prefix, int maxCount)
+        {
+            if (string.IsNullOrWhiteSpace(prefix) || maxCount <= 0 || !IsLoaded || _entries == null || _entries.Count == 0)
+                return Enumerable.Empty<string>();
+
+            return _entries.Keys
+                .Where(key => key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .Take(maxCount);
         }
 
         private static string GetField(IList<string> fields, int index)

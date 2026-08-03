@@ -1,142 +1,47 @@
 <UserControl x:Class="QuickDictForICC.Views.DictionaryPopup"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:p="clr-namespace:QuickDictForICC.Properties"
+             xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
              mc:Ignorable="d" 
              d:DesignHeight="720" d:DesignWidth="480"
              Background="White">
     <UserControl.Resources>
-        <Style x:Key="PopupButtonBase" TargetType="Button">
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="MinWidth" Value="38"/>
-            <Setter Property="MinHeight" Value="42"/>
+        <Style x:Key="SuggestionButton" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Padding" Value="10,4"/>
             <Setter Property="Margin" Value="2"/>
-            <Setter Property="Padding" Value="6,4"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#F0F0F0"/>
-            <Setter Property="Foreground" Value="#333333"/>
-            <Setter Property="BorderBrush" Value="#D0D0D0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              RecognizesAccessKey="True"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#E0E0E0"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#C8C8C8"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
 
-        <Style x:Key="KeyButton" TargetType="Button" BasedOn="{StaticResource PopupButtonBase}">
+        <Style x:Key="ScrollArrowButton" TargetType="Button">
+            <Setter Property="MinWidth" Value="28"/>
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style x:Key="KeyButton" TargetType="Button" BasedOn="{StaticResource {x:Static ui:ThemeKeys.DefaultButtonStyleKey}}">
             <Setter Property="MinWidth" Value="38"/>
             <Setter Property="MinHeight" Value="42"/>
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="2"/>
         </Style>
 
-        <Style x:Key="FunctionKeyButton" TargetType="Button" BasedOn="{StaticResource KeyButton}">
-            <Setter Property="Background" Value="#E3E3E3"/>
+        <Style x:Key="FunctionKeyButton" TargetType="Button" BasedOn="{StaticResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}">
             <Setter Property="MinWidth" Value="60"/>
-        </Style>
-
-        <Style x:Key="GreenSearchButton" TargetType="Button" BasedOn="{StaticResource PopupButtonBase}">
-            <Setter Property="Background" Value="#00A86B"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="MinWidth" Value="110"/>
-            <Setter Property="MinHeight" Value="46"/>
+            <Setter Property="MinHeight" Value="42"/>
             <Setter Property="FontSize" Value="18"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="10"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"
-                                              RecognizesAccessKey="True"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#009B63"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#008C5A"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="SuggestionButton" TargetType="Button" BasedOn="{StaticResource PopupButtonBase}">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="MinHeight" Value="34"/>
-        </Style>
-
-        <Style x:Key="ScrollArrowButton" TargetType="Button" BasedOn="{StaticResource PopupButtonBase}">
-            <Setter Property="MinWidth" Value="28"/>
-            <Setter Property="MinHeight" Value="34"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Background" Value="Transparent"/>
-        </Style>
-
-        <Style x:Key="ClearButton" TargetType="Button">
-            <Setter Property="Width" Value="32"/>
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Background" Value="#BDBDBD"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                CornerRadius="12"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#9E9E9E"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="#757575"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="Margin" Value="2"/>
         </Style>
     </UserControl.Resources>
 
@@ -158,23 +63,17 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0"
-                        Width="32"
-                        Height="32"
-                        CornerRadius="8"
-                        Background="#FF8C00"
-                        Margin="16,0,10,0"
-                        VerticalAlignment="Center">
-                    <TextBlock Text="A"
-                               FontSize="18"
-                               FontWeight="Bold"
-                               Foreground="White"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                </Border>
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal"
+                            Margin="16,0,10,0"
+                            VerticalAlignment="Center">
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Dictionary}"
+                                 FontSize="28"
+                                 Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundAccentBrushKey}}"/>
+                </StackPanel>
 
                 <TextBlock Grid.Column="1"
-                           Text="英汉字典"
+                           Text="{x:Static p:Resources.DictionaryPopup_Title}"
                            FontSize="20"
                            FontWeight="Bold"
                            Foreground="#333333"
@@ -182,9 +81,6 @@
 
                 <Button x:Name="CloseButton"
                         Grid.Column="2"
-                        Content="&#xE711;"
-                        FontFamily="Segoe MDL2 Assets"
-                        FontSize="12"
                         Width="36"
                         Height="36"
                         Margin="0,0,8,0"
@@ -193,59 +89,37 @@
                         Foreground="#666666"
                         VerticalAlignment="Center"
                         Cursor="Hand">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="Border" Background="{TemplateBinding Background}" CornerRadius="18">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="Border" Property="Background" Value="#E5E5E5"/>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="Border" Property="Background" Value="#CCCCCC"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChromeClose}" FontSize="12"/>
                 </Button>
             </Grid>
 
             <!-- 搜索区 -->
-            <Border Grid.Row="1" Margin="16,8,16,8"
-                    Background="#F5F5F5"
-                    BorderBrush="#E5E5E5"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="4">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <Grid Grid.Row="1" Margin="16,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                    <TextBox x:Name="SearchTextBox"
-                             Grid.Column="0"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             FontSize="24"
-                             FontWeight="Bold"
-                             VerticalContentAlignment="Center"
-                             Padding="12,6"
-                             Foreground="#333333"
-                             CaretBrush="#333333"
-                             Text=""/>
+                <TextBox x:Name="SearchTextBox"
+                         Grid.Column="0"
+                         Style="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextBoxStyleKey}}"
+                         FontSize="24"
+                         FontWeight="Bold"
+                         VerticalContentAlignment="Center"
+                         Padding="12,6"/>
 
-                    <Button x:Name="ClearButton"
-                            Grid.Column="1"
-                            Content="&#xE894;"
-                            FontFamily="Segoe MDL2 Assets"
-                            Style="{StaticResource ClearButton}"
-                            ToolTip="清空"
-                            Margin="8,0,12,0"
-                            VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
+                <Button x:Name="ClearButton"
+                        Grid.Column="1"
+                        Width="32"
+                        Height="32"
+                        Margin="8,0,0,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTip="{x:Static p:Resources.DictionaryPopup_ClearTooltip}"
+                        VerticalAlignment="Center">
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Clear}" FontSize="14"/>
+                </Button>
+            </Grid>
 
             <!-- 候选词条区 -->
             <Grid Grid.Row="2" Margin="12,0,12,8" Height="50">
@@ -257,11 +131,11 @@
 
                 <Button x:Name="SuggestionsScrollLeft"
                         Grid.Column="0"
-                        Content="&#xE76B;"
-                        FontFamily="Segoe MDL2 Assets"
                         Style="{StaticResource ScrollArrowButton}"
                         Click="SuggestionsScrollLeft_Click"
-                        ToolTip="向左滚动"/>
+                        ToolTip="{x:Static p:Resources.DictionaryPopup_ScrollLeftTooltip}">
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronLeft}" FontSize="14"/>
+                </Button>
 
                 <ScrollViewer x:Name="SuggestionsScrollViewer"
                               Grid.Column="1"
@@ -277,11 +151,11 @@
 
                 <Button x:Name="SuggestionsScrollRight"
                         Grid.Column="2"
-                        Content="&#xE76C;"
-                        FontFamily="Segoe MDL2 Assets"
                         Style="{StaticResource ScrollArrowButton}"
                         Click="SuggestionsScrollRight_Click"
-                        ToolTip="向右滚动"/>
+                        ToolTip="{x:Static p:Resources.DictionaryPopup_ScrollRightTooltip}">
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronRight}" FontSize="14"/>
+                </Button>
             </Grid>
 
             <!-- 结果内容区 -->
@@ -296,7 +170,7 @@
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"
                                     Margin="12">
-                        <TextBlock Text="请输入单词开始查询"
+                        <TextBlock Text="{x:Static p:Resources.DictionaryPopup_EmptyHint}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Foreground="#999999"
@@ -310,12 +184,12 @@
                             Visibility="Collapsed">
                         <StackPanel HorizontalAlignment="Center"
                                     VerticalAlignment="Center">
-                            <TextBlock Text="词典加载中..."
+                            <TextBlock Text="{x:Static p:Resources.DictionaryPopup_LoadingText}"
                                        FontSize="16"
                                        Foreground="#666666"
                                        HorizontalAlignment="Center"/>
                             <TextBlock x:Name="LoadingDetailText"
-                                       Text="首次使用或词典较大时需要一些时间"
+                                       Text="{x:Static p:Resources.DictionaryPopup_LoadingDetail}"
                                        FontSize="12"
                                        Foreground="#999999"
                                        HorizontalAlignment="Center"
@@ -375,22 +249,26 @@
                 <!-- 底部功能键 -->
                 <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="BackspaceButton"
-                            Content="&#xE750;"
-                            FontFamily="Segoe MDL2 Assets"
                             Style="{StaticResource FunctionKeyButton}"
                             Click="BackspaceButton_Click"
-                            ToolTip="退格"/>
+                            ToolTip="{x:Static p:Resources.DictionaryPopup_BackspaceTooltip}">
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BackSpaceQWERTY}" FontSize="18"/>
+                    </Button>
                     <Button x:Name="SpaceButton"
-                            Content="Space"
+                            Content="{x:Static p:Resources.DictionaryPopup_SpaceButton}"
                             Style="{StaticResource FunctionKeyButton}"
                             MinWidth="160"
                             Click="SpaceButton_Click"
-                            ToolTip="空格"/>
+                            ToolTip="{x:Static p:Resources.DictionaryPopup_SpaceButton}"/>
                     <Button x:Name="KeyboardSearchButton"
-                            Content="搜索"
-                            Style="{StaticResource GreenSearchButton}"
+                            Content="{x:Static p:Resources.DictionaryPopup_SearchButton}"
+                            Style="{DynamicResource {x:Static ui:ThemeKeys.AccentButtonStyleKey}}"
+                            MinWidth="110"
+                            MinHeight="46"
+                            FontSize="18"
+                            FontWeight="Bold"
                             Click="SearchButton_Click"
-                            ToolTip="搜索"/>
+                            ToolTip="{x:Static p:Resources.DictionaryPopup_SearchButton}"/>
                 </StackPanel>
             </Grid>
         </Grid>

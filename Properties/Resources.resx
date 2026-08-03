@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DictionaryWindow_Title" xml:space="preserve">
+    <value>英汉字典</value>
+  </data>
+  <data name="DictionaryWindow_LogoText" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="DictionaryPopup_Title" xml:space="preserve">
+    <value>英汉字典</value>
+  </data>
+  <data name="DictionaryPopup_SearchPlaceholder" xml:space="preserve">
+    <value>输入单词查询</value>
+  </data>
+  <data name="DictionaryPopup_ClearTooltip" xml:space="preserve">
+    <value>清空</value>
+  </data>
+  <data name="DictionaryPopup_ScrollLeftTooltip" xml:space="preserve">
+    <value>向左滚动</value>
+  </data>
+  <data name="DictionaryPopup_ScrollRightTooltip" xml:space="preserve">
+    <value>向右滚动</value>
+  </data>
+  <data name="DictionaryPopup_EmptyHint" xml:space="preserve">
+    <value>请输入单词开始查询</value>
+  </data>
+  <data name="DictionaryPopup_LoadingText" xml:space="preserve">
+    <value>词典加载中...</value>
+  </data>
+  <data name="DictionaryPopup_LoadingDetail" xml:space="preserve">
+    <value>首次使用或词典较大时需要一些时间</value>
+  </data>
+  <data name="DictionaryPopup_BackspaceTooltip" xml:space="preserve">
+    <value>退格</value>
+  </data>
+  <data name="DictionaryPopup_SpaceButton" xml:space="preserve">
+    <value>Space</value>
+  </data>
+  <data name="DictionaryPopup_SearchButton" xml:space="preserve">
+    <value>搜索</value>
+  </data>
+  <data name="Message_DictionaryServiceNotReady" xml:space="preserve">
+    <value>词典服务尚未就绪</value>
+  </data>
+  <data name="Message_DictionaryLoading" xml:space="preserve">
+    <value>词典正在加载中，请稍后再试</value>
+  </data>
+  <data name="Message_DictionaryNotConfigured" xml:space="preserve">
+    <value>未找到可用的词典文件。请在 QuickDict 设置中配置词典路径。</value>
+  </data>
+  <data name="Message_WordNotFound_Format" xml:space="preserve">
+    <value>未找到 "{0}" 的释义</value>
+  </data>
+  <data name="ResultTab_Definition" xml:space="preserve">
+    <value>释义</value>
+  </data>
+  <data name="ResultTab_Phrases" xml:space="preserve">
+    <value>词组</value>
+  </data>
+  <data name="ResultTab_Sentences" xml:space="preserve">
+    <value>例句</value>
+  </data>
+  <data name="ResultTab_Synonyms" xml:space="preserve">
+    <value>近义词</value>
+  </data>
+  <data name="ResultView_SpeakTooltip" xml:space="preserve">
+    <value>朗读</value>
+  </data>
+  <data name="ResultView_NoPhrases" xml:space="preserve">
+    <value>暂无词组</value>
+  </data>
+  <data name="ResultView_NoSentences" xml:space="preserve">
+    <value>暂无例句</value>
+  </data>
+  <data name="ResultView_NoSynonyms" xml:space="preserve">
+    <value>暂无近义词</value>
+  </data>
+  <data name="ResultView_GenerateCard" xml:space="preserve">
+    <value>生成单词卡</value>
+  </data>
+  <data name="ResultView_HtmlRenderError_Format" xml:space="preserve">
+    <value>无法渲染 MDict HTML（WebView2 可能未安装）：{0}</value>
+  </data>
+  <data name="Message_SpeakFailed_Format" xml:space="preserve">
+    <value>朗读失败：{0}</value>
+  </data>
+  <data name="MessageBox_Title_Notice" xml:space="preserve">
+    <value>提示</value>
+  </data>
+  <data name="Message_WordCardComingSoon" xml:space="preserve">
+    <value>生成单词卡功能即将上线</value>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>QuickDict 设置</value>
+  </data>
+  <data name="Settings_Description" xml:space="preserve">
+    <value>配置词典路径与 TTS 发音选项。修改路径后需重启插件生效。</value>
+  </data>
+  <data name="Settings_Section_Dictionary" xml:space="preserve">
+    <value>词典</value>
+  </data>
+  <data name="Settings_EcDictPathLabel" xml:space="preserve">
+    <value>ECDICT 文件路径（ecdict.csv）</value>
+  </data>
+  <data name="Settings_MDictPathLabel" xml:space="preserve">
+    <value>MDict 词典路径（.mdx）</value>
+  </data>
+  <data name="Settings_MDictResourcePathLabel" xml:space="preserve">
+    <value>MDict 资源包路径（.mdd，可选）</value>
+  </data>
+  <data name="Settings_EcDictPathHeader" xml:space="preserve">
+    <value>ECDICT 文件路径</value>
+  </data>
+  <data name="Settings_EcDictPathDescription" xml:space="preserve">
+    <value>ecdict.csv 格式离线词库</value>
+  </data>
+  <data name="Settings_MDictPathHeader" xml:space="preserve">
+    <value>MDict 词典路径</value>
+  </data>
+  <data name="Settings_MDictPathDescription" xml:space="preserve">
+    <value>.mdx 格式 MDict 词典文件</value>
+  </data>
+  <data name="Settings_MDictResourcePathHeader" xml:space="preserve">
+    <value>MDict 资源包路径</value>
+  </data>
+  <data name="Settings_MDictResourcePathDescription" xml:space="preserve">
+    <value>.mdd 格式资源包，存放发音与图片等资源（可选）</value>
+  </data>
+  <data name="Settings_BrowseButton" xml:space="preserve">
+    <value>浏览...</value>
+  </data>
+  <data name="Settings_Section_Tts" xml:space="preserve">
+    <value>语音朗读（TTS）</value>
+  </data>
+  <data name="Settings_TtsEngineLabel" xml:space="preserve">
+    <value>TTS 引擎</value>
+  </data>
+  <data name="Settings_TtsEngine_Edge" xml:space="preserve">
+    <value>Edge TTS（在线）</value>
+  </data>
+  <data name="Settings_TtsEngine_Piper" xml:space="preserve">
+    <value>Piper TTS（离线）</value>
+  </data>
+  <data name="Settings_EdgeVoiceLabel" xml:space="preserve">
+    <value>Edge 音色</value>
+  </data>
+  <data name="Settings_EdgeVoice_AriaNeural" xml:space="preserve">
+    <value>en-US-AriaNeural</value>
+  </data>
+  <data name="Settings_EdgeVoice_GuyNeural" xml:space="preserve">
+    <value>en-US-GuyNeural</value>
+  </data>
+  <data name="Settings_EdgeVoice_SoniaNeural" xml:space="preserve">
+    <value>en-GB-SoniaNeural</value>
+  </data>
+  <data name="Settings_EdgeVoice_EmmaMultilingualNeural" xml:space="preserve">
+    <value>en-US-EmmaMultilingualNeural</value>
+  </data>
+  <data name="Settings_EdgeVoice_JennyNeural" xml:space="preserve">
+    <value>en-US-JennyNeural</value>
+  </data>
+  <data name="Settings_EdgeVoice_RyanNeural" xml:space="preserve">
+    <value>en-GB-RyanNeural</value>
+  </data>
+  <data name="Settings_EdgeVoice_NatashaNeural" xml:space="preserve">
+    <value>en-AU-NatashaNeural</value>
+  </data>
+  <data name="Settings_EdgeRateLabel" xml:space="preserve">
+    <value>Edge 语速</value>
+  </data>
+  <data name="Settings_EdgeRateDefault" xml:space="preserve">
+    <value>+0%</value>
+  </data>
+  <data name="Settings_PiperExecutableLabel" xml:space="preserve">
+    <value>Piper 可执行文件路径（piper.exe）</value>
+  </data>
+  <data name="Settings_PiperModelLabel" xml:space="preserve">
+    <value>Piper 模型路径（.onnx）</value>
+  </data>
+  <data name="Settings_TestTextLabel" xml:space="preserve">
+    <value>测试朗读文本</value>
+  </data>
+  <data name="Settings_TestTextDefault" xml:space="preserve">
+    <value>Seeds of stories, brought by the wind and cultivated by time.</value>
+  </data>
+  <data name="Settings_TestTtsButton" xml:space="preserve">
+    <value>测试语音</value>
+  </data>
+  <data name="Settings_TtsEngineHeader" xml:space="preserve">
+    <value>TTS 引擎</value>
+  </data>
+  <data name="Settings_EdgeVoiceHeader" xml:space="preserve">
+    <value>Edge 音色</value>
+  </data>
+  <data name="Settings_EdgeRateHeader" xml:space="preserve">
+    <value>Edge 语速</value>
+  </data>
+  <data name="Settings_PiperExecutableHeader" xml:space="preserve">
+    <value>Piper 可执行文件</value>
+  </data>
+  <data name="Settings_PiperModelHeader" xml:space="preserve">
+    <value>Piper 模型路径</value>
+  </data>
+  <data name="Settings_TestTtsHeader" xml:space="preserve">
+    <value>测试朗读文本</value>
+  </data>
+  <data name="Settings_SaveButton" xml:space="preserve">
+    <value>保存设置</value>
+  </data>
+  <data name="Settings_ClearCacheButton" xml:space="preserve">
+    <value>清除 TTS 缓存</value>
+  </data>
+  <data name="Settings_Dialog_EcDictTitle" xml:space="preserve">
+    <value>选择 ECDICT 数据文件</value>
+  </data>
+  <data name="Settings_Dialog_CsvFilter" xml:space="preserve">
+    <value>CSV 文件|*.csv|所有文件|*.*</value>
+  </data>
+  <data name="Settings_Dialog_MDictTitle" xml:space="preserve">
+    <value>选择 MDict 词典文件</value>
+  </data>
+  <data name="Settings_Dialog_MDictFilter" xml:space="preserve">
+    <value>MDict 词典|*.mdx|所有文件|*.*</value>
+  </data>
+  <data name="Settings_Dialog_MDictResourceTitle" xml:space="preserve">
+    <value>选择 MDict 资源包（可选）</value>
+  </data>
+  <data name="Settings_Dialog_MDictResourceFilter" xml:space="preserve">
+    <value>MDict 资源包|*.mdd|所有文件|*.*</value>
+  </data>
+  <data name="Settings_Dialog_PiperExecutableTitle" xml:space="preserve">
+    <value>选择 Piper 可执行文件</value>
+  </data>
+  <data name="Settings_Dialog_ExeFilter" xml:space="preserve">
+    <value>可执行文件|*.exe|所有文件|*.*</value>
+  </data>
+  <data name="Settings_Dialog_PiperModelTitle" xml:space="preserve">
+    <value>选择 Piper 语音模型</value>
+  </data>
+  <data name="Settings_Dialog_OnnxFilter" xml:space="preserve">
+    <value>ONNX 模型|*.onnx|所有文件|*.*</value>
+  </data>
+  <data name="Message_SaveSuccess" xml:space="preserve">
+    <value>设置已保存。</value>
+  </data>
+  <data name="Message_SaveSuccessWithWarning_Format" xml:space="preserve">
+    <value>设置已保存，但检测到以下问题：{0}</value>
+  </data>
+  <data name="Message_SaveFailed_Format" xml:space="preserve">
+    <value>保存失败：{0}</value>
+  </data>
+  <data name="Message_TtsServiceNotReady" xml:space="preserve">
+    <value>TTS 服务尚未初始化</value>
+  </data>
+  <data name="Message_TtsTestTextEmpty" xml:space="preserve">
+    <value>测试文本不能为空</value>
+  </data>
+  <data name="Message_TtsTestFailed_Format" xml:space="preserve">
+    <value>朗读失败：{0}</value>
+  </data>
+  <data name="Message_CacheCleared" xml:space="preserve">
+    <value>TTS 缓存已清除。</value>
+  </data>
+  <data name="Message_NoCache" xml:space="preserve">
+    <value>暂无 TTS 缓存。</value>
+  </data>
+  <data name="Message_ClearCacheFailed_Format" xml:space="preserve">
+    <value>清除缓存失败：{0}</value>
+  </data>
+  <data name="Message_ValidateEcDictNotFound" xml:space="preserve">
+    <value>ECDICT 文件不存在。</value>
+  </data>
+  <data name="Message_ValidateMDictNotFound" xml:space="preserve">
+    <value>MDict 词典文件不存在。</value>
+  </data>
+  <data name="Message_ValidateMDictResourceNotFound" xml:space="preserve">
+    <value>MDict 资源包不存在。</value>
+  </data>
+  <data name="Message_ValidatePiperExecutableInvalid" xml:space="preserve">
+    <value>Piper 可执行文件路径无效。</value>
+  </data>
+  <data name="Message_ValidatePiperModelInvalid" xml:space="preserve">
+    <value>Piper 模型路径无效。</value>
+  </data>
+  <data name="Plugin_DisplayName" xml:space="preserve">
+    <value>QuickDict 查词</value>
+  </data>
+  <data name="Plugin_Description" xml:space="preserve">
+    <value>打开 QuickDict 英语单词查询窗口</value>
+  </data>
+  <data name="ToolbarButton_Label" xml:space="preserve">
+    <value>查词</value>
+  </data>
+  <data name="ToolbarButton_FallbackText" xml:space="preserve">
+    <value>QuickDict</value>
+  </data>
+  <data name="Message_DictionaryUnavailable" xml:space="preserve">
+    <value>未找到可用的词典文件。请在 QuickDict 设置中配置 ECDICT（ecdict.csv）或 MDict（.mdx）路径。</value>
+  </data>
+  <data name="Message_PluginInitialized_Format" xml:space="preserve">
+    <value>{0} 已初始化</value>
+  </data>
+  <data name="Message_PluginShutdown_Format" xml:space="preserve">
+    <value>{0} 已关闭</value>
+  </data>
+  <data name="Message_LoadSettingsFailed" xml:space="preserve">
+    <value>加载 QuickDict 设置失败，已使用默认设置</value>
+  </data>
+  <data name="Message_InitializeServicesFailed" xml:space="preserve">
+    <value>初始化 QuickDict 服务失败</value>
+  </data>
+  <data name="Message_InitializeSettingsViewFailed" xml:space="preserve">
+    <value>初始化 QuickDict 设置面板失败</value>
+  </data>
+  <data name="Message_RegisterToolbarItemFailed" xml:space="preserve">
+    <value>注册 QuickDict 工具栏按钮失败</value>
+  </data>
+  <data name="Message_CancelDictionaryLoadFailed" xml:space="preserve">
+    <value>取消 QuickDict 词典加载任务时出错</value>
+  </data>
+  <data name="Message_DisposeTtsServiceFailed" xml:space="preserve">
+    <value>关闭 QuickDict TTS 服务时出错</value>
+  </data>
+  <data name="Message_DictionaryLoadCanceled" xml:space="preserve">
+    <value>QuickDict 词典加载已取消（可能已超时）。</value>
+  </data>
+  <data name="Message_LoadDictionaryFailed" xml:space="preserve">
+    <value>后台加载 QuickDict 词典数据时出错</value>
+  </data>
+  <data name="Message_CheckDictionaryAvailabilityFailed" xml:space="preserve">
+    <value>检查 QuickDict 词典可用性时出错</value>
+  </data>
+  <data name="Message_SettingsSavedRestartRequired" xml:space="preserve">
+    <value>QuickDict 设置已保存；词典/TTS 路径变更需重启插件后生效。</value>
+  </data>
+  <data name="Message_CreateToolbarButtonFailed" xml:space="preserve">
+    <value>构造 QuickDict 工具栏按钮视图失败</value>
+  </data>
+  <data name="Message_OpenDictionaryWindowFailed" xml:space="preserve">
+    <value>打开 QuickDict 查词窗口失败</value>
+  </data>
+  <data name="Message_InitializeThemeResourcesFailed" xml:space="preserve">
+    <value>初始化 QuickDict 主题资源失败</value>
+  </data>
+  <data name="Message_ShutdownThemeResourcesFailed" xml:space="preserve">
+    <value>清理 QuickDict 主题资源时出错</value>
+  </data>
+</root>

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -63,6 +65,15 @@ namespace QuickDictForICC.Services
             }
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<string> GetSuggestions(string prefix, int maxCount)
+        {
+            if (string.IsNullOrWhiteSpace(prefix))
+                return Enumerable.Empty<string>();
+
+            return _ecdictService.GetSuggestions(prefix, maxCount);
         }
     }
 }

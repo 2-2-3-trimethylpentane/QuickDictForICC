@@ -38,4 +38,18 @@
     <None Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- 自动将内置 ECDICT 词典复制到输出目录 -->
+  <ItemGroup>
+    <None Include="ecdict\ecdict.csv" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- 本地化资源文件 -->
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using QuickDictForICC.Properties;
 using QuickDictForICC.Services;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,7 +32,7 @@ namespace QuickDictForICC.Views
         {
             InitializeComponent();
 
-            RootScrollViewer.PreviewMouseWheel += OnRootScrollViewerPreviewMouseWheel;
+            ApplySmoothScrolling();
 
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _host = host;
@@ -307,12 +308,28 @@ namespace QuickDictForICC.Views
             return value < min ? min : (value > max ? max : value);
         }
 
-        private void OnRootScrollViewerPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        private void ApplySmoothScrolling()
         {
-            if (sender is ScrollViewer scrollViewer)
+            var queue = new Queue<DependencyObject>();
+            queue.Enqueue(this);
+
+            while (queue.Count > 0)
             {
-                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta);
-                e.Handled = true;
+                var current = queue.Dequeue();
+
+                if (current is ScrollViewer sv)
+                {
+                    sv.PanningMode = PanningMode.VerticalOnly;
+                    sv.PanningDeceleration = 0.001;
+                    sv.PanningRatio = 1;
+                    sv.ManipulationBoundaryFeedback += (s, e) => e.Handled = true;
+                }
+
+                foreach (var child in LogicalTreeHelper.GetChildren(current))
+                {
+                    if (child is DependencyObject childDep)
+                        queue.Enqueue(childDep);
+                }
             }
         }
     }

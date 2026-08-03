@@ -11,6 +11,7 @@
     <ScrollViewer x:Name="RootScrollViewer"
                   VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled"
+                  PanningMode="VerticalFirst"
                   Padding="28,20">
         <StackPanel>
             <TextBlock Text="{x:Static p:Resources.Settings_Title}"

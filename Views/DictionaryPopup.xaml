@@ -100,11 +100,15 @@
                         Width="32"
                         Height="32"
                         Margin="8,0,0,0"
+                        Padding="0"
                         Background="Transparent"
                         BorderThickness="0"
                         ToolTip="{x:Static p:Resources.DictionaryPopup_ClearTooltip}"
                         VerticalAlignment="Center">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Clear}" FontSize="14"/>
+                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Clear}"
+                                 FontSize="14"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center"/>
                 </Button>
             </Grid>
 

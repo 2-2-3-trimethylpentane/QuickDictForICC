@@ -1,7 +1,7 @@
 {
   "Id": "quickdict.plugin",
   "Name": "QuickDict 查词",
-  "Version": "0.9.0",
+  "Version": "0.9.1",
   "Description": "英语单词查询插件，支持 ECDICT 与用户导入的 MDict 词典，集成 Edge TTS 与 Piper TTS",
   "Author": "2,2,3-三甲基戊烷",
   "EntranceAssembly": "QuickDictForICC.dll",

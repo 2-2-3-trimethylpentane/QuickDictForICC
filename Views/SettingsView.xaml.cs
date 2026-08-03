@@ -3,11 +3,9 @@ using Microsoft.Win32;
 using QuickDictForICC.Properties;
 using QuickDictForICC.Services;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace QuickDictForICC.Views
@@ -31,8 +29,6 @@ namespace QuickDictForICC.Views
         public SettingsView(PluginSettings settings, IPluginHost host = null, Action onSettingsSaved = null, TtsService ttsService = null)
         {
             InitializeComponent();
-
-            ApplySmoothScrolling();
 
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _host = host;
@@ -308,29 +304,5 @@ namespace QuickDictForICC.Views
             return value < min ? min : (value > max ? max : value);
         }
 
-        private void ApplySmoothScrolling()
-        {
-            var queue = new Queue<DependencyObject>();
-            queue.Enqueue(this);
-
-            while (queue.Count > 0)
-            {
-                var current = queue.Dequeue();
-
-                if (current is ScrollViewer sv)
-                {
-                    sv.PanningMode = PanningMode.VerticalOnly;
-                    sv.PanningDeceleration = 0.001;
-                    sv.PanningRatio = 1;
-                    sv.ManipulationBoundaryFeedback += (s, e) => e.Handled = true;
-                }
-
-                foreach (var child in LogicalTreeHelper.GetChildren(current))
-                {
-                    if (child is DependencyObject childDep)
-                        queue.Enqueue(childDep);
-                }
-            }
-        }
     }
 }

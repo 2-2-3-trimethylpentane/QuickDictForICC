@@ -8,12 +8,7 @@
              xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="640">
-    <ScrollViewer x:Name="RootScrollViewer"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled"
-                  PanningMode="VerticalFirst"
-                  Padding="28,20">
-        <StackPanel>
+    <StackPanel Margin="28,20">
             <TextBlock Text="{x:Static p:Resources.Settings_Title}"
                        FontSize="28"
                        FontWeight="Bold"
@@ -192,6 +187,5 @@
                        FontSize="14"
                        Foreground="#888888"
                        TextWrapping="Wrap"/>
-        </StackPanel>
-    </ScrollViewer>
+    </StackPanel>
 </UserControl>

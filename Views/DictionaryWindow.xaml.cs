@@ -38,14 +38,8 @@ namespace QuickDictForICC.Views
             _popup.SetResultView(resultView);
             _popup.SetLoadingTask(loadingTask);
             _popup.SetTitleBarVisible(true);
-            _popup.CloseRequested += OnPopupCloseRequested;
 
             MainContentHost.Content = _popup;
-        }
-
-        private void OnPopupCloseRequested(object sender, EventArgs e)
-        {
-            Close();
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -58,7 +52,6 @@ namespace QuickDictForICC.Views
         {
             if (_popup != null)
             {
-                _popup.CloseRequested -= OnPopupCloseRequested;
                 _popup.SetResultView(null);
                 _popup.SetDictionaryService(null);
                 _popup.SetTtsService(null);

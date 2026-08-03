@@ -61,7 +61,6 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0"
@@ -79,19 +78,6 @@
                            FontWeight="Bold"
                            Foreground="#333333"
                            VerticalAlignment="Center"/>
-
-                <Button x:Name="CloseButton"
-                        Grid.Column="2"
-                        Width="36"
-                        Height="36"
-                        Margin="0,0,8,0"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Foreground="#666666"
-                        VerticalAlignment="Center"
-                        Cursor="Hand">
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChromeClose}" FontSize="12"/>
-                </Button>
             </Grid>
 
             <!-- 搜索区 -->
@@ -170,7 +156,7 @@
                     <ContentControl x:Name="ResultContentHost"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"
-                                    Margin="12">
+                                    Margin="8">
                         <TextBlock Text="{x:Static p:Resources.DictionaryPopup_EmptyHint}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
@@ -288,7 +274,7 @@
                         Padding="24,0"
                         FontSize="18"
                         FontWeight="SemiBold"
-                        HorizontalAlignment="Right"
+                        HorizontalAlignment="Center"
                         IsEnabled="False"/>
             </Border>
         </Grid>

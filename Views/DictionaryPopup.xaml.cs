@@ -33,11 +33,6 @@ namespace QuickDictForICC.Views
         public event EventHandler<IWordEntry> ResultReady;
 
         /// <summary>
-        /// 弹窗关闭请求事件。
-        /// </summary>
-        public event EventHandler CloseRequested;
-
-        /// <summary>
         /// 初始化 <see cref="DictionaryPopup"/>。
         /// </summary>
         public DictionaryPopup()
@@ -45,7 +40,6 @@ namespace QuickDictForICC.Views
             InitializeComponent();
 
             ClearButton.Click += OnClearButtonClick;
-            CloseButton.Click += OnCloseButtonClick;
             GenerateCardButton.Click += (s, e) => _resultView?.GenerateWordCard();
 
             SearchTextBox.KeyDown += OnSearchTextBoxKeyDown;
@@ -344,11 +338,6 @@ namespace QuickDictForICC.Views
             LastResult = null;
             ShowEmptyResult();
             ResultReady?.Invoke(this, null);
-        }
-
-        private void OnCloseButtonClick(object sender, RoutedEventArgs e)
-        {
-            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void KeyButton_Click(object sender, RoutedEventArgs e)

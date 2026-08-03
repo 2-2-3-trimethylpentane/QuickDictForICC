@@ -14,11 +14,77 @@ permissions:
 
 jobs:
   build:
-    uses: InkCanvasForClass/community/.github/workflows/plugin-build.yml@net6
-    with:
-      project: SamplePlugin.csproj
-      plugin_id: sample.plugin
-      plugin_name: 示例插件
-      plugin_description: '示例插件，演示工具栏组件动态注册'
-      auto_release: true
-    secrets: inherit
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 6
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Publish plugin
+        shell: pwsh
+        run: dotnet publish QuickDictForICC.csproj -c Release --self-contained false
+
+      - name: Package .icpx
+        id: package
+        shell: pwsh
+        run: |
+          ./pack.ps1
+          $hash = (Get-FileHash packages/quickdict.plugin.icpx -Algorithm SHA256).Hash.ToLower()
+          "sha256=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickdict.plugin
+          path: packages/quickdict.plugin.icpx
+
+      - name: Read manifest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: manifest
+        shell: pwsh
+        run: |
+          $manifest = Get-Content manifest.json | ConvertFrom-Json
+          "tag=v$($manifest.Version)" >> $env:GITHUB_OUTPUT
+          "version=$($manifest.Version)" >> $env:GITHUB_OUTPUT
+          "name=$($manifest.Name)" >> $env:GITHUB_OUTPUT
+          "description=$($manifest.Description)" >> $env:GITHUB_OUTPUT
+
+      - name: Check existing release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: check_release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "${{ steps.manifest.outputs.tag }}" --repo "${{ github.repository }}" 2>$null | Out-Null
+          $exists = $LASTEXITCODE -eq 0
+          "exists=$($exists.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+          exit 0
+
+      - name: Create Release on version bump
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.check_release.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.manifest.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.manifest.outputs.name }} ${{ steps.manifest.outputs.tag }}
+          body: |
+            ## ${{ steps.manifest.outputs.name }} v${{ steps.manifest.outputs.version }}
+            ${{ steps.manifest.outputs.description }}
+
+            ### 安装方法
+            1. 下载下方的 `.icpx` 文件
+            2. 将其放入 ICC-CE 的 `PluginPackages/` 目录
+            3. 重启 ICC-CE 即可自动安装
+
+            ### 校验信息
+            ```
+            SHA256: ${{ steps.package.outputs.sha256 }}
+            ```
+          files: packages/quickdict.plugin.icpx
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

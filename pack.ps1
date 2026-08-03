@@ -16,7 +16,7 @@ if (-not (Test-Path $publishDir)) {
 # Read manifest to obtain plugin ID and version
 $manifestPath = Join-Path $publishDir "manifest.json"
 if (-not (Test-Path $manifestPath)) { throw "manifest.json not found at $manifestPath. Please build the project first." }
-$manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
+$manifest = Get-Content $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $pluginId = $manifest.Id
 $version = $manifest.Version
 

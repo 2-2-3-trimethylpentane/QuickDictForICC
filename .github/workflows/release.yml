@@ -15,12 +15,50 @@ permissions:
 
 jobs:
   release:
-    uses: InkCanvasForClass/community/.github/workflows/plugin-build.yml@net6
-    with:
-      project: SamplePlugin.csproj
-      plugin_id: sample.plugin
-      plugin_name: 示例插件
-      plugin_description: '示例插件，演示工具栏组件动态注册'
-      create_release: true
-      release_tag: ${{ inputs.tag || github.ref_name }}
-    secrets: inherit
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 6
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Publish plugin
+        shell: pwsh
+        run: dotnet publish QuickDictForICC.csproj -c Release --self-contained false
+
+      - name: Package .icpx
+        id: package
+        shell: pwsh
+        run: |
+          ./pack.ps1
+          $manifest = Get-Content manifest.json | ConvertFrom-Json
+          $hash = (Get-FileHash packages/quickdict.plugin.icpx -Algorithm SHA256).Hash.ToLower()
+          "version=$($manifest.Version)" >> $env:GITHUB_OUTPUT
+          "name=$($manifest.Name)" >> $env:GITHUB_OUTPUT
+          "description=$($manifest.Description)" >> $env:GITHUB_OUTPUT
+          "sha256=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          name: ${{ steps.package.outputs.name }} ${{ inputs.tag || github.ref_name }}
+          body: |
+            ## ${{ steps.package.outputs.name }} v${{ steps.package.outputs.version }}
+            ${{ steps.package.outputs.description }}
+
+            ### 安装方法
+            1. 下载下方的 `.icpx` 文件
+            2. 将其放入 ICC-CE 的 `PluginPackages/` 目录
+            3. 重启 ICC-CE 即可自动安装
+
+            ### 校验信息
+            ```
+            SHA256: ${{ steps.package.outputs.sha256 }}
+            ```
+          files: packages/quickdict.plugin.icpx
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

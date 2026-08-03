@@ -84,12 +84,6 @@ namespace QuickDictForICC.Views
             {
                 ShowTextDefinition(entry);
             }
-
-            PhrasesText.Text = string.IsNullOrWhiteSpace(entry.Exchange)
-                ? Properties.Resources.ResultView_NoPhrases
-                : entry.Exchange;
-
-            ResultTabs.SelectedIndex = 0;
         }
 
         private void ClearDisplay()
@@ -102,7 +96,6 @@ namespace QuickDictForICC.Views
             DefinitionText.Text = string.Empty;
             TranslationText.Text = string.Empty;
             ExchangeText.Text = string.Empty;
-            PhrasesText.Text = Properties.Resources.ResultView_NoPhrases;
         }
 
         private async void ShowHtmlDefinition(string html)

@@ -43,82 +43,41 @@
             </DockPanel>
         </Border>
 
-        <!-- 标签页区 -->
-        <TabControl Grid.Row="1"
-                    x:Name="ResultTabs">
-            <TabItem Header="{x:Static p:Resources.ResultTab_Definition}">
-                <Grid>
-                    <wv2:WebView2 x:Name="DefinitionWebView"
-                                  Visibility="Collapsed"/>
-                    <ScrollViewer x:Name="TextDefinitionScroll"
-                                  Visibility="Collapsed"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="16,8">
-                            <TextBlock x:Name="PosText"
-                                       FontSize="20"
-                                       FontWeight="SemiBold"
-                                       Foreground="#00A86B"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,0,6"/>
-                            <TextBlock x:Name="DefinitionText"
-                                       FontSize="20"
-                                       Foreground="#333333"
-                                       TextWrapping="Wrap"
-                                       LineHeight="32"
-                                       Margin="0,0,0,6"/>
-                            <TextBlock x:Name="TranslationText"
-                                       FontSize="20"
-                                       Foreground="#333333"
-                                       TextWrapping="Wrap"
-                                       LineHeight="32"
-                                       Margin="0,0,0,6"/>
-                            <TextBlock x:Name="ExchangeText"
-                                       FontSize="18"
-                                       Foreground="#666666"
-                                       TextWrapping="Wrap"
-                                       LineHeight="30"
-                                       Margin="0,0,0,4"/>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-            <TabItem Header="{x:Static p:Resources.ResultTab_Phrases}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <TextBlock x:Name="PhrasesText"
-                               Text="{x:Static p:Resources.ResultView_NoPhrases}"
+        <!-- 释义展示区 -->
+        <Grid Grid.Row="1">
+            <wv2:WebView2 x:Name="DefinitionWebView"
+                          Visibility="Collapsed"/>
+            <ScrollViewer x:Name="TextDefinitionScroll"
+                          Visibility="Collapsed"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="16,8">
+                    <TextBlock x:Name="PosText"
                                FontSize="20"
-                               Foreground="#888888"
-                               Margin="16,8"
+                               FontWeight="SemiBold"
+                               Foreground="#00A86B"
                                TextWrapping="Wrap"
-                               LineHeight="32"/>
-                </ScrollViewer>
-            </TabItem>
-            <TabItem Header="{x:Static p:Resources.ResultTab_Sentences}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <TextBlock x:Name="SentencesTextBlock"
-                               Text="{x:Static p:Resources.ResultView_NoSentences}"
+                               Margin="0,0,0,6"/>
+                    <TextBlock x:Name="DefinitionText"
                                FontSize="20"
-                               Foreground="#888888"
-                               Margin="16,8"
+                               Foreground="#333333"
                                TextWrapping="Wrap"
-                               LineHeight="32"/>
-                </ScrollViewer>
-            </TabItem>
-            <TabItem Header="{x:Static p:Resources.ResultTab_Synonyms}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <TextBlock x:Name="SynonymsTextBlock"
-                               Text="{x:Static p:Resources.ResultView_NoSynonyms}"
+                               LineHeight="32"
+                               Margin="0,0,0,6"/>
+                    <TextBlock x:Name="TranslationText"
                                FontSize="20"
-                               Foreground="#888888"
-                               Margin="16,8"
+                               Foreground="#333333"
                                TextWrapping="Wrap"
-                               LineHeight="32"/>
-                </ScrollViewer>
-            </TabItem>
-        </TabControl>
+                               LineHeight="32"
+                               Margin="0,0,0,6"/>
+                    <TextBlock x:Name="ExchangeText"
+                               FontSize="18"
+                               Foreground="#666666"
+                               TextWrapping="Wrap"
+                               LineHeight="30"
+                               Margin="0,0,0,4"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </UserControl>

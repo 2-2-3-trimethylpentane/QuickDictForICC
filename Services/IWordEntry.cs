@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace QuickDictForICC.Services
 {
     /// <summary>
@@ -28,5 +30,14 @@ namespace QuickDictForICC.Services
 
         /// <summary>结果来源标识，如 "MDict"、"ECDICT"。</summary>
         string Source { get; set; }
+
+        /// <summary>词组，用于单词卡「词组」Tab。</summary>
+        IReadOnlyList<string> Phrases { get; set; }
+
+        /// <summary>例句，用于单词卡「例句」Tab。</summary>
+        IReadOnlyList<string> Sentences { get; set; }
+
+        /// <summary>近义词，用于单词卡「近义词」Tab。</summary>
+        IReadOnlyList<string> Synonyms { get; set; }
     }
 }

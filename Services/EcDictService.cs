@@ -63,6 +63,9 @@ namespace QuickDictForICC.Services
                 int translationIndex = headers.IndexOf("translation");
                 int posIndex = headers.IndexOf("pos");
                 int exchangeIndex = headers.IndexOf("exchange");
+                int phraseIndex = headers.FindIndex(h => string.Equals(h, "phrase", StringComparison.OrdinalIgnoreCase));
+                int sentenceIndex = headers.FindIndex(h => string.Equals(h, "sentence", StringComparison.OrdinalIgnoreCase));
+                int synonymIndex = headers.FindIndex(h => string.Equals(h, "synonym", StringComparison.OrdinalIgnoreCase));
 
                 // ECDICT 必须有 word 列
                 if (wordIndex < 0)
@@ -93,7 +96,10 @@ namespace QuickDictForICC.Services
                         Translation = GetField(fields, translationIndex),
                         Pos = GetField(fields, posIndex),
                         Exchange = GetField(fields, exchangeIndex),
-                        Source = "ECDICT"
+                        Source = "ECDICT",
+                        Phrases = SplitListField(GetField(fields, phraseIndex)),
+                        Sentences = SplitListField(GetField(fields, sentenceIndex)),
+                        Synonyms = SplitListField(GetField(fields, synonymIndex))
                     };
 
                     // 每处理 1000 行再检查一次取消，平衡响应与性能。
@@ -160,6 +166,29 @@ namespace QuickDictForICC.Services
 
             string value = fields[index];
             return string.IsNullOrEmpty(value) ? null : value;
+        }
+
+        /// <summary>
+        /// 将 CSV 列表字段按常见分隔符拆分，过滤空条目。
+        /// 支持换行符、分号、管道符以及字面量 "\n"。
+        /// </summary>
+        private static List<string> SplitListField(string value)
+        {
+            var list = new List<string>();
+            if (string.IsNullOrWhiteSpace(value))
+                return list;
+
+            // 先处理字面量 "\n"，再按实际分隔符拆分。
+            string normalized = value.Replace("\\n", "\n");
+            char[] separators = new[] { '\n', ';', '|' };
+            foreach (string part in normalized.Split(separators, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string trimmed = part.Trim();
+                if (!string.IsNullOrEmpty(trimmed))
+                    list.Add(trimmed);
+            }
+
+            return list;
         }
 
         /// <summary>

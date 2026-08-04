@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:p="clr-namespace:QuickDictForICC.Properties"
              xmlns:ui="clr-namespace:iNKORE.UI.WPF.Modern.Controls;assembly=iNKORE.UI.WPF.Modern.Controls"
+             xmlns:modern="http://schemas.inkore.net/lib/ui/wpf/modern"
              xmlns:controls="clr-namespace:Ink_Canvas.Controls;assembly=InkCanvas.Controls"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="640">
@@ -12,11 +13,11 @@
             <TextBlock Text="{x:Static p:Resources.Settings_Title}"
                        FontSize="28"
                        FontWeight="Bold"
-                       Foreground="#222222"
+                       Foreground="{DynamicResource {x:Static modern:ThemeKeys.SystemControlForegroundBaseHighBrushKey}}"
                        Margin="0,0,0,8"/>
             <TextBlock Text="{x:Static p:Resources.Settings_Description}"
                        FontSize="13"
-                       Foreground="#888888"
+                       Foreground="{DynamicResource {x:Static modern:ThemeKeys.SystemControlForegroundBaseMediumBrushKey}}"
                        TextWrapping="Wrap"
                        Margin="0,0,0,16"/>
 
@@ -185,7 +186,7 @@
             <TextBlock x:Name="StatusText"
                        Text=""
                        FontSize="14"
-                       Foreground="#888888"
+                       Foreground="{DynamicResource {x:Static modern:ThemeKeys.SystemControlForegroundBaseMediumBrushKey}}"
                        TextWrapping="Wrap"/>
     </StackPanel>
 </UserControl>

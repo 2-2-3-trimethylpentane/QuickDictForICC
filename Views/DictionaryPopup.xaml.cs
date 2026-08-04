@@ -1,3 +1,4 @@
+using iNKORE.UI.WPF.Modern;
 using QuickDictForICC.Properties;
 using QuickDictForICC.Services;
 using System;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace QuickDictForICC.Views
@@ -227,6 +229,8 @@ namespace QuickDictForICC.Views
             }
 
             var panel = new StackPanel();
+            Brush highBrush = GetThemeForegroundBrush(ThemeKeys.SystemControlForegroundBaseHighBrushKey, Brushes.Black);
+            Brush mediumBrush = GetThemeForegroundBrush(ThemeKeys.SystemControlForegroundBaseMediumBrushKey, Brushes.Gray);
 
             if (!string.IsNullOrWhiteSpace(entry.Word))
             {
@@ -235,7 +239,7 @@ namespace QuickDictForICC.Views
                     Text = entry.Word,
                     FontSize = 22,
                     FontWeight = FontWeights.SemiBold,
-                    Foreground = System.Windows.Media.Brushes.Black,
+                    Foreground = highBrush,
                     Margin = new Thickness(0, 0, 0, 4)
                 });
             }
@@ -246,7 +250,7 @@ namespace QuickDictForICC.Views
                 {
                     Text = $"/ {entry.Phonetic} /",
                     FontSize = 14,
-                    Foreground = System.Windows.Media.Brushes.Gray,
+                    Foreground = mediumBrush,
                     Margin = new Thickness(0, 0, 0, 8)
                 });
             }
@@ -257,7 +261,7 @@ namespace QuickDictForICC.Views
                 {
                     Text = entry.Translation,
                     FontSize = 15,
-                    Foreground = System.Windows.Media.Brushes.DarkSlateGray,
+                    Foreground = highBrush,
                     TextWrapping = TextWrapping.Wrap,
                     Margin = new Thickness(0, 0, 0, 8)
                 });
@@ -269,7 +273,7 @@ namespace QuickDictForICC.Views
                 {
                     Text = entry.Definition,
                     FontSize = 13,
-                    Foreground = System.Windows.Media.Brushes.DimGray,
+                    Foreground = mediumBrush,
                     TextWrapping = TextWrapping.Wrap
                 });
             }
@@ -440,7 +444,7 @@ namespace QuickDictForICC.Views
                 Text = Properties.Resources.DictionaryPopup_EmptyHint,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                Foreground = System.Windows.Media.Brushes.Gray,
+                Foreground = GetThemeForegroundBrush(ThemeKeys.SystemControlForegroundBaseMediumBrushKey, Brushes.Gray),
                 FontSize = 14
             };
         }
@@ -454,10 +458,24 @@ namespace QuickDictForICC.Views
                 Text = message,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
-                Foreground = System.Windows.Media.Brushes.Gray,
+                Foreground = GetThemeForegroundBrush(ThemeKeys.SystemControlForegroundBaseMediumBrushKey, Brushes.Gray),
                 FontSize = 14,
                 TextWrapping = TextWrapping.Wrap
             };
+        }
+
+        /// <summary>
+        /// 从当前应用资源查找主题前景笔刷；若找不到则返回兜底笔刷。
+        /// </summary>
+        private static Brush GetThemeForegroundBrush(string resourceKey, Brush fallback)
+        {
+            try
+            {
+                if (Application.Current?.TryFindResource(resourceKey) is Brush brush)
+                    return brush;
+            }
+            catch { }
+            return fallback;
         }
 
         private void RefreshSuggestions(string input)

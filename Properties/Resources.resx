@@ -146,6 +146,21 @@
   <data name="ResultView_GenerateCard" xml:space="preserve">
     <value>生成单词卡</value>
   </data>
+  <data name="WordCard_NoPhrases" xml:space="preserve">
+    <value>暂无词组</value>
+  </data>
+  <data name="WordCard_NoSentences" xml:space="preserve">
+    <value>暂无例句</value>
+  </data>
+  <data name="WordCard_NoSynonyms" xml:space="preserve">
+    <value>暂无近义词</value>
+  </data>
+  <data name="WordCard_Title" xml:space="preserve">
+    <value>单词卡</value>
+  </data>
+  <data name="WordCard_NoDefinitions" xml:space="preserve">
+    <value>暂无释义</value>
+  </data>
   <data name="ResultView_HtmlRenderError_Format" xml:space="preserve">
     <value>无法渲染 MDict HTML（WebView2 可能未安装）：{0}</value>
   </data>
@@ -157,6 +172,18 @@
   </data>
   <data name="Message_WordCardComingSoon" xml:space="preserve">
     <value>生成单词卡功能即将上线</value>
+  </data>
+  <data name="Message_CanvasServiceNotAvailable" xml:space="preserve">
+    <value>无法插入白板：画布服务不可用。</value>
+  </data>
+  <data name="Message_NoWordToGenerateCard" xml:space="preserve">
+    <value>请先查询一个单词。</value>
+  </data>
+  <data name="Message_WordCardInsertFailed_Format" xml:space="preserve">
+    <value>插入单词卡失败：{0}</value>
+  </data>
+  <data name="Message_WordCardRenderFailed_Format" xml:space="preserve">
+    <value>生成单词卡失败：{0}</value>
   </data>
   <data name="Settings_Title" xml:space="preserve">
     <value>QuickDict 设置</value>
@@ -382,6 +409,12 @@
   </data>
   <data name="Message_RegisterToolbarItemFailed" xml:space="preserve">
     <value>注册 QuickDict 工具栏按钮失败</value>
+  </data>
+  <data name="Message_RegisterBoardToolbarItemFailed" xml:space="preserve">
+    <value>注册 QuickDict 白板工具栏按钮失败</value>
+  </data>
+  <data name="Message_RegisterBoardToolbarItemNotSupported" xml:space="preserve">
+    <value>当前 ICC 版本不支持白板工具栏注册</value>
   </data>
   <data name="Message_CancelDictionaryLoadFailed" xml:space="preserve">
     <value>取消 QuickDict 词典加载任务时出错</value>

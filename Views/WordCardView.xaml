@@ -1,0 +1,107 @@
+<UserControl x:Class="QuickDictForICC.Views.WordCardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+             xmlns:p="clr-namespace:QuickDictForICC.Properties"
+             mc:Ignorable="d"
+             d:DesignWidth="400" d:DesignHeight="600">
+    <Border Background="#FFFFFF"
+            BorderBrush="#E5E5E5"
+            BorderThickness="1"
+            CornerRadius="12">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 标题栏 -->
+            <Border Grid.Row="0"
+                    Padding="24,16"
+                    BorderBrush="#E8E8E8"
+                    BorderThickness="0,0,0,1">
+                <DockPanel LastChildFill="False">
+                    <StackPanel DockPanel.Dock="Left"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <TextBlock x:Name="WordText"
+                                   FontSize="36"
+                                   FontWeight="Bold"
+                                   Foreground="#333333"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="PhoneticText"
+                                   FontSize="18"
+                                   Foreground="#666666"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,0,0"/>
+                    </StackPanel>
+
+                    <Button x:Name="SpeakerButton"
+                            DockPanel.Dock="Right"
+                            Width="32"
+                            Height="32"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="0"
+                            VerticalAlignment="Center">
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Volume}"
+                                     FontSize="18"
+                                     Foreground="#00A86B"/>
+                    </Button>
+                </DockPanel>
+            </Border>
+
+            <!-- Tab 区 -->
+            <TabControl Grid.Row="1"
+                        Style="{StaticResource {x:Static ui:ThemeKeys.TabControlPivotStyleKey}}"
+                        Padding="12,0">
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="{x:Static p:Resources.ResultTab_Definition}"
+                                   FontSize="16"/>
+                    </TabItem.Header>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="DefinitionPanel" Margin="20,12"/>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="{x:Static p:Resources.ResultTab_Phrases}"
+                                   FontSize="16"/>
+                    </TabItem.Header>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="PhrasesPanel" Margin="20,12"/>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="{x:Static p:Resources.ResultTab_Sentences}"
+                                   FontSize="16"/>
+                    </TabItem.Header>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="SentencesPanel" Margin="20,12"/>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem>
+                    <TabItem.Header>
+                        <TextBlock Text="{x:Static p:Resources.ResultTab_Synonyms}"
+                                   FontSize="16"/>
+                    </TabItem.Header>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel x:Name="SynonymsPanel" Margin="20,12"/>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Border>
+</UserControl>

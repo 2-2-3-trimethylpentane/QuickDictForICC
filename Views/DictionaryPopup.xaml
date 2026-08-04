@@ -7,7 +7,7 @@
              xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
              mc:Ignorable="d" 
              d:DesignHeight="720" d:DesignWidth="480"
-             Background="White">
+             Background="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundChromeMediumLowBrushKey}}">
     <UserControl.Resources>
         <Style x:Key="SuggestionButton" TargetType="Button">
             <Setter Property="FontSize" Value="14"/>
@@ -45,7 +45,9 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="White" BorderBrush="#DDDDDD" BorderThickness="1" CornerRadius="12" Padding="0">
+    <Border Background="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundChromeMediumLowBrushKey}}"
+            BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseLowBrushKey}}"
+            BorderThickness="1" CornerRadius="12" Padding="0">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -57,7 +59,8 @@
             </Grid.RowDefinitions>
 
             <!-- 标题栏 -->
-            <Grid x:Name="TitleBarGrid" Grid.Row="0" Height="56" Background="White">
+            <Grid x:Name="TitleBarGrid" Grid.Row="0" Height="56"
+                  Background="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundChromeMediumLowBrushKey}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -76,7 +79,7 @@
                            Text="{x:Static p:Resources.DictionaryPopup_Title}"
                            FontSize="20"
                            FontWeight="Bold"
-                           Foreground="#333333"
+                           Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseHighBrushKey}}"
                            VerticalAlignment="Center"/>
             </Grid>
 
@@ -152,8 +155,8 @@
             <!-- 结果内容区 -->
             <Border Grid.Row="3"
                     Margin="12,0,12,0"
-                    Background="#FAFAFA"
-                    BorderBrush="#E5E5E5"
+                    Background="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundAltMediumHighBrushKey}}"
+                    BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseLowBrushKey}}"
                     BorderThickness="1"
                     CornerRadius="10">
                 <Grid>
@@ -164,25 +167,25 @@
                         <TextBlock Text="{x:Static p:Resources.DictionaryPopup_EmptyHint}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
-                                   Foreground="#999999"
+                                   Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseMediumBrushKey}}"
                                    FontSize="14"/>
                     </ContentControl>
 
                     <!-- 词典加载中覆盖层 -->
                     <Border x:Name="LoadingOverlay"
-                            Background="#F5F5F5"
+                            Background="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundAltMediumHighBrushKey}}"
                             CornerRadius="10"
                             Visibility="Collapsed">
                         <StackPanel HorizontalAlignment="Center"
                                     VerticalAlignment="Center">
                             <TextBlock Text="{x:Static p:Resources.DictionaryPopup_LoadingText}"
                                        FontSize="16"
-                                       Foreground="#666666"
+                                       Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseHighBrushKey}}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock x:Name="LoadingDetailText"
                                        Text="{x:Static p:Resources.DictionaryPopup_LoadingDetail}"
                                        FontSize="12"
-                                       Foreground="#999999"
+                                       Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseMediumBrushKey}}"
                                        HorizontalAlignment="Center"
                                        Margin="0,8,0,0"/>
                         </StackPanel>
@@ -267,8 +270,8 @@
             <Border Grid.Row="5"
                     Margin="12,8,12,12"
                     Padding="16,12"
-                    Background="#FAFAFA"
-                    BorderBrush="#E5E5E5"
+                    Background="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundAltMediumHighBrushKey}}"
+                    BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseLowBrushKey}}"
                     BorderThickness="1"
                     CornerRadius="10">
                 <Button x:Name="GenerateCardButton"

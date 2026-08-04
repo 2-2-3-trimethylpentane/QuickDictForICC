@@ -7,6 +7,7 @@ using QuickDictForICC.Views;
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,6 +28,7 @@ namespace QuickDictForICC
         private System.Threading.CancellationTokenSource _dictionaryLoadCts;
         private System.Threading.Tasks.Task _dictionaryLoadTask;
         private TtsService _ttsService;
+        private WordCardService _wordCardService;
         private SettingsView _settingsView;
         private DictionaryWindow _dictionaryWindow;
         private ResolveEventHandler _assemblyResolveHandler;
@@ -86,6 +88,15 @@ namespace QuickDictForICC
             catch (Exception ex)
             {
                 host?.LogError(Resources.Message_RegisterToolbarItemFailed, ex);
+            }
+
+            try
+            {
+                RegisterBoardToolbarItem();
+            }
+            catch (Exception ex)
+            {
+                host?.LogError(Resources.Message_RegisterBoardToolbarItemFailed, ex);
             }
 
             Log(string.Format(Resources.Message_PluginInitialized_Format, Name));
@@ -199,6 +210,7 @@ namespace QuickDictForICC
             });
 
             _ttsService = new TtsService();
+            _wordCardService = new WordCardService();
 
             // 延迟到加载任务结束后再提示词典不可用。
             // 获取 UI 线程同步上下文；若当前线程无同步上下文则回退到默认调度器。
@@ -287,16 +299,78 @@ namespace QuickDictForICC
             try
             {
                 var geometry = Geometry.Parse(iconPath);
-                var drawing = new GeometryDrawing
-                {
-                    Geometry = geometry,
-                    Brush = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33))
-                };
 
+                // 保留 ToolbarImageButton 默认的动态主题笔刷（IconForeground / FloatBarForeground），
+                // 不再用硬编码颜色覆盖，避免深色模式下图标/文字看不见。
                 var button = new ToolbarImageButton
                 {
+                    Label = Resources.ToolbarButton_Label
+                };
+                button.Icon.Geometry = geometry;
+
+                button.ButtonMouseUp += (s, e) => ShowOrActivateDictionaryWindow();
+
+                return button;
+            }
+            catch (Exception ex)
+            {
+                _host?.LogError(Resources.Message_CreateToolbarButtonFailed, ex);
+                // 失败时返回一个退化的 TextBlock，至少保证 BuildView 不返回 null
+                return new System.Windows.Controls.TextBlock
+                {
+                    Text = Resources.ToolbarButton_FallbackText,
+                    Margin = new Thickness(4)
+                };
+            }
+        }
+
+        private void RegisterBoardToolbarItem()
+        {
+            const string searchIconPath =
+                "M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z";
+
+            var itemInfo = new PluginToolbarItemInfo
+            {
+                Id = "quickdict.board.button",
+                DisplayName = Resources.Plugin_DisplayName,
+                Description = Resources.Plugin_Description,
+                IconGeometry = searchIconPath,
+                ViewFactory = () => CreateBoardToolbarButton(searchIconPath)
+            };
+
+            // IPluginHost 当前 SDK 版本未暴露 RegisterBoardToolbarItem，但 ICC 宿主实现可能包含该方法。
+            // 通过反射调用以兼容当前 SDK。注意：插件与宿主可能在不同加载上下文中加载 PluginToolbarItemInfo，
+            // 因此按方法名查找后直接用 object 数组调用，避免跨程序集类型匹配失败。
+            var hostType = _host?.GetType();
+            var candidates = hostType?.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .Where(m => m.Name == "RegisterBoardToolbarItem")
+                .ToList();
+
+            if (candidates == null || candidates.Count == 0)
+            {
+                var allMethods = string.Join(", ", hostType?.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(m => m.Name.Contains("Toolbar") || m.Name.Contains("Board"))
+                    .Select(m => m.Name) ?? Array.Empty<string>());
+                _host?.Log($"{Resources.Message_RegisterBoardToolbarItemNotSupported} (host={hostType?.FullName ?? "null"}, toolbarMethods=[{allMethods}])");
+                return;
+            }
+
+            var registerMethod = candidates.Count == 1 ? candidates[0] : candidates.FirstOrDefault(m => m.GetParameters().Length == 1);
+            registerMethod?.Invoke(_host, new object[] { itemInfo });
+            _host?.Log($"RegisterBoardToolbarItem invoked on {hostType.FullName}");
+        }
+
+        /// <summary>
+        /// 构造白板工具栏按钮视图。
+        /// </summary>
+        private FrameworkElement CreateBoardToolbarButton(string iconPath)
+        {
+            try
+            {
+                var button = new BoardToolbarButton
+                {
                     Label = Resources.ToolbarButton_Label,
-                    IconGeometryDrawing = drawing
+                    IconGeometry = iconPath
                 };
 
                 button.ButtonMouseUp += (s, e) => ShowOrActivateDictionaryWindow();
@@ -325,7 +399,9 @@ namespace QuickDictForICC
                         _dictionaryService,
                         _ttsService,
                         _dictionaryLoadTask,
-                        _settings);
+                        _settings,
+                        _wordCardService,
+                        _host);
 
                     _dictionaryWindow.Closed += (s, e) => _dictionaryWindow = null;
                     _dictionaryWindow.Show();

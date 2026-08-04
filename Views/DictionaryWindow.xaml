@@ -14,8 +14,9 @@
         MinHeight="600"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
+        Topmost="True"
         ui:WindowHelper.UseModernWindowStyle="True">
-    <Grid>
+    <Grid Background="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundChromeMediumLowBrushKey}}">
         <ContentControl x:Name="MainContentHost"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch">

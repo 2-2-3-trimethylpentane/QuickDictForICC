@@ -7,13 +7,12 @@
              xmlns:p="clr-namespace:QuickDictForICC.Properties"
              mc:Ignorable="d"
              d:DesignWidth="400" d:DesignHeight="600">
-    <Border Background="#FFFFFF"
-            BorderBrush="#E5E5E5"
+    <Border Background="{DynamicResource {x:Static ui:ThemeKeys.SystemControlBackgroundChromeMediumLowBrushKey}}"
+            BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseLowBrushKey}}"
             BorderThickness="1"
             CornerRadius="12">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
@@ -21,7 +20,7 @@
             <!-- 标题栏 -->
             <Border Grid.Row="0"
                     Padding="24,16"
-                    BorderBrush="#E8E8E8"
+                    BorderBrush="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseLowBrushKey}}"
                     BorderThickness="0,0,0,1">
                 <DockPanel LastChildFill="False">
                     <StackPanel DockPanel.Dock="Left"
@@ -30,13 +29,15 @@
                         <TextBlock x:Name="WordText"
                                    FontSize="36"
                                    FontWeight="Bold"
-                                   Foreground="#333333"
-                                   VerticalAlignment="Center"/>
+                                   Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseHighBrushKey}}"
+                                   VerticalAlignment="Center"
+                                   IsHitTestVisible="False"/>
                         <TextBlock x:Name="PhoneticText"
                                    FontSize="18"
-                                   Foreground="#666666"
+                                   Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseMediumBrushKey}}"
                                    VerticalAlignment="Center"
-                                   Margin="12,0,0,0"/>
+                                   Margin="12,0,0,0"
+                                   IsHitTestVisible="False"/>
                     </StackPanel>
 
                     <Button x:Name="SpeakerButton"
@@ -46,62 +47,74 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Padding="0"
-                            VerticalAlignment="Center">
+                            VerticalAlignment="Center"
+                            ToolTip="{x:Static p:Resources.ResultView_SpeakTooltip}">
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Volume}"
                                      FontSize="18"
-                                     Foreground="#00A86B"/>
+                                     Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundAccentBrushKey}}"/>
                     </Button>
                 </DockPanel>
             </Border>
 
-            <!-- Tab 区 -->
-            <TabControl Grid.Row="1"
-                        Style="{StaticResource {x:Static ui:ThemeKeys.TabControlPivotStyleKey}}"
-                        Padding="12,0">
-                <TabItem>
-                    <TabItem.Header>
+            <!-- 内容区：垂直滚动，按顺序展示释义/词组/例句/近义词 -->
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <!-- 释义 -->
+                    <StackPanel x:Name="DefinitionSection"
+                                Margin="20,12"
+                                Visibility="Collapsed">
                         <TextBlock Text="{x:Static p:Resources.ResultTab_Definition}"
-                                   FontSize="16"/>
-                    </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel x:Name="DefinitionPanel" Margin="20,12"/>
-                    </ScrollViewer>
-                </TabItem>
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseHighBrushKey}}"
+                                   IsHitTestVisible="False"/>
+                        <StackPanel x:Name="DefinitionPanel"
+                                    Margin="0,8,0,0"/>
+                    </StackPanel>
 
-                <TabItem>
-                    <TabItem.Header>
+                    <!-- 词组 -->
+                    <StackPanel x:Name="PhrasesSection"
+                                Margin="20,12"
+                                Visibility="Collapsed">
                         <TextBlock Text="{x:Static p:Resources.ResultTab_Phrases}"
-                                   FontSize="16"/>
-                    </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel x:Name="PhrasesPanel" Margin="20,12"/>
-                    </ScrollViewer>
-                </TabItem>
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseHighBrushKey}}"
+                                   IsHitTestVisible="False"/>
+                        <StackPanel x:Name="PhrasesPanel"
+                                    Margin="0,8,0,0"/>
+                    </StackPanel>
 
-                <TabItem>
-                    <TabItem.Header>
+                    <!-- 例句 -->
+                    <StackPanel x:Name="SentencesSection"
+                                Margin="20,12"
+                                Visibility="Collapsed">
                         <TextBlock Text="{x:Static p:Resources.ResultTab_Sentences}"
-                                   FontSize="16"/>
-                    </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel x:Name="SentencesPanel" Margin="20,12"/>
-                    </ScrollViewer>
-                </TabItem>
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseHighBrushKey}}"
+                                   IsHitTestVisible="False"/>
+                        <StackPanel x:Name="SentencesPanel"
+                                    Margin="0,8,0,0"/>
+                    </StackPanel>
 
-                <TabItem>
-                    <TabItem.Header>
+                    <!-- 近义词 -->
+                    <StackPanel x:Name="SynonymsSection"
+                                Margin="20,12"
+                                Visibility="Collapsed">
                         <TextBlock Text="{x:Static p:Resources.ResultTab_Synonyms}"
-                                   FontSize="16"/>
-                    </TabItem.Header>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel x:Name="SynonymsPanel" Margin="20,12"/>
-                    </ScrollViewer>
-                </TabItem>
-            </TabControl>
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource {x:Static ui:ThemeKeys.SystemControlForegroundBaseHighBrushKey}}"
+                                   IsHitTestVisible="False"/>
+                        <StackPanel x:Name="SynonymsPanel"
+                                    Margin="0,8,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
         </Grid>
     </Border>
 </UserControl>

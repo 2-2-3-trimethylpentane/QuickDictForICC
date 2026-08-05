@@ -7,7 +7,6 @@ using QuickDictForICC.Views;
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -338,26 +337,7 @@ namespace QuickDictForICC
                 ViewFactory = () => CreateBoardToolbarButton(searchIconPath)
             };
 
-            // IPluginHost 当前 SDK 版本未暴露 RegisterBoardToolbarItem，但 ICC 宿主实现可能包含该方法。
-            // 通过反射调用以兼容当前 SDK。注意：插件与宿主可能在不同加载上下文中加载 PluginToolbarItemInfo，
-            // 因此按方法名查找后直接用 object 数组调用，避免跨程序集类型匹配失败。
-            var hostType = _host?.GetType();
-            var candidates = hostType?.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .Where(m => m.Name == "RegisterBoardToolbarItem")
-                .ToList();
-
-            if (candidates == null || candidates.Count == 0)
-            {
-                var allMethods = string.Join(", ", hostType?.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(m => m.Name.Contains("Toolbar") || m.Name.Contains("Board"))
-                    .Select(m => m.Name) ?? Array.Empty<string>());
-                _host?.Log($"{Resources.Message_RegisterBoardToolbarItemNotSupported} (host={hostType?.FullName ?? "null"}, toolbarMethods=[{allMethods}])");
-                return;
-            }
-
-            var registerMethod = candidates.Count == 1 ? candidates[0] : candidates.FirstOrDefault(m => m.GetParameters().Length == 1);
-            registerMethod?.Invoke(_host, new object[] { itemInfo });
-            _host?.Log($"RegisterBoardToolbarItem invoked on {hostType.FullName}");
+            _host?.RegisterBoardToolbarItem(itemInfo);
         }
 
         /// <summary>

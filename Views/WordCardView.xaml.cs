@@ -263,30 +263,33 @@ namespace QuickDictForICC.Views
                 FontSize = 18,
                 LineHeight = 28,
                 TextWrapping = TextWrapping.Wrap,
-                Foreground = GetThemeBrush(ThemeKeys.SystemControlForegroundBaseHighBrushKey, Brushes.Black),
                 Margin = new Thickness(0, 0, 0, 8),
                 IsHitTestVisible = false
             };
+            textBlock.SetResourceReference(TextBlock.ForegroundProperty, ThemeKeys.SystemControlForegroundBaseHighBrushKey);
 
             var match = PosPrefixRegex.Match(line);
             if (match.Success)
             {
-                textBlock.Inlines.Add(new Run
+                var run1 = new Run
                 {
                     Text = match.Groups[1].Value,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = GetThemeBrush(ThemeKeys.SystemControlForegroundAccentBrushKey, new SolidColorBrush(Colors.Green))
-                });
-                textBlock.Inlines.Add(new Run
+                    FontWeight = FontWeights.Bold
+                };
+                run1.SetResourceReference(Run.ForegroundProperty, ThemeKeys.SystemControlForegroundAccentBrushKey);
+
+                var run2 = new Run
                 {
-                    Text = match.Groups[2].Value,
-                    Foreground = GetThemeBrush(ThemeKeys.SystemControlForegroundBaseHighBrushKey, Brushes.Black)
-                });
+                    Text = match.Groups[2].Value
+                };
+                run2.SetResourceReference(Run.ForegroundProperty, ThemeKeys.SystemControlForegroundBaseHighBrushKey);
+
+                textBlock.Inlines.Add(run1);
+                textBlock.Inlines.Add(run2);
             }
             else
             {
                 textBlock.Text = line;
-                textBlock.Foreground = GetThemeBrush(ThemeKeys.SystemControlForegroundBaseHighBrushKey, Brushes.Black);
             }
 
             return textBlock;
@@ -306,16 +309,17 @@ namespace QuickDictForICC.Views
 
             foreach (var item in safeItems)
             {
-                panel.Children.Add(new TextBlock
+                var tb = new TextBlock
                 {
                     Text = item,
                     FontSize = 18,
                     LineHeight = 28,
                     TextWrapping = TextWrapping.Wrap,
-                    Foreground = GetThemeBrush(ThemeKeys.SystemControlForegroundBaseHighBrushKey, Brushes.Black),
                     Margin = new Thickness(0, 0, 0, 8),
                     IsHitTestVisible = false
-                });
+                };
+                tb.SetResourceReference(TextBlock.ForegroundProperty, ThemeKeys.SystemControlForegroundBaseHighBrushKey);
+                panel.Children.Add(tb);
             }
 
             SetSectionVisibility(section, true);
@@ -323,32 +327,22 @@ namespace QuickDictForICC.Views
 
         private TextBlock CreateEmptyMessage(string message)
         {
-            return new TextBlock
+            var tb = new TextBlock
             {
                 Text = message,
                 FontSize = 16,
-                Foreground = GetThemeBrush(ThemeKeys.SystemControlForegroundBaseMediumBrushKey, Brushes.Gray),
                 TextWrapping = TextWrapping.Wrap,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Margin = new Thickness(0, 20, 0, 0),
                 IsHitTestVisible = false
             };
+            tb.SetResourceReference(TextBlock.ForegroundProperty, ThemeKeys.SystemControlForegroundBaseMediumBrushKey);
+            return tb;
         }
 
         private static void SetSectionVisibility(StackPanel section, bool visible)
         {
             section.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private static Brush GetThemeBrush(string resourceKey, Brush fallback)
-        {
-            try
-            {
-                if (Application.Current?.TryFindResource(resourceKey) is Brush brush)
-                    return brush;
-            }
-            catch { }
-            return fallback;
         }
     }
 }

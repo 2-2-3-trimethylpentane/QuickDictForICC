@@ -184,7 +184,10 @@ namespace QuickDictForICC
             }
 
             var ecDictService = new EcDictService(_settings.EcDictPath);
-            var mdictService = new MDictService(_settings.MDictPath, _settings.MDictResourcePath);
+            var mdictService = new MDictService(
+                _settings.MDictPath,
+                _settings.MDictResourcePath,
+                message => _host?.Log(message));
             _dictionaryService = new DictionaryService(mdictService, ecDictService);
 
             // 在后台线程异步加载词典，避免阻塞 ICC 初始化。
@@ -196,15 +199,19 @@ namespace QuickDictForICC
             {
                 try
                 {
+                    LogToDebug("[QuickDictPlugin] DictionaryService.LoadAsync 开始");
                     await _dictionaryService.LoadAsync(_dictionaryLoadCts.Token).ConfigureAwait(false);
+                    LogToDebug("[QuickDictPlugin] DictionaryService.LoadAsync 完成");
                 }
                 catch (OperationCanceledException)
                 {
                     _host?.Log(Resources.Message_DictionaryLoadCanceled);
+                    LogToDebug("[QuickDictPlugin] DictionaryService.LoadAsync 被取消");
                 }
                 catch (Exception ex)
                 {
                     _host?.LogError(Resources.Message_LoadDictionaryFailed, ex);
+                    LogToDebug($"[QuickDictPlugin] DictionaryService.LoadAsync 异常: {ex}");
                 }
             });
 
@@ -438,6 +445,11 @@ namespace QuickDictForICC
             {
                 return null;
             }
+        }
+
+        private void LogToDebug(string message)
+        {
+            _host?.Log(message);
         }
     }
 }

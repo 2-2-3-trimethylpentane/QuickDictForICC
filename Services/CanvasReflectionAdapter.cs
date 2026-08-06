@@ -51,6 +51,7 @@ namespace QuickDictForICC.Services
 
         private readonly IPluginHost _host;
         private readonly Dispatcher _dispatcher;
+        private FrameworkElement _activeSelectionElement;
 
         /// <summary>
         /// 初始化画布反射适配器。
@@ -278,8 +279,8 @@ namespace QuickDictForICC.Services
                 InvokePrivateVoid(mainWindow, "InitializeElementTransform", cardView);
                 BindElementEvents(mainWindow, cardView);
                 InvokePrivateVoid(mainWindow, "SelectElement", cardView);
-                ShowSelectionToolbar(mainWindow, cardView);
                 SwitchToSelectToolMode(mainWindow, inkCanvas);
+                QueueShowSelectionToolbar(mainWindow, cardView);
 
                 LogDiagnostic($"WordCardView inserted at ({left:F0},{top:F0}) size {newWidth:F0}x{newHeight:F0}.");
                 return true;
@@ -329,6 +330,19 @@ namespace QuickDictForICC.Services
                 AttachHandler<EventHandler<ManipulationCompletedEventArgs>>(mainWindow, type, "Element_ManipulationCompleted",
                     h => cardView.ManipulationCompleted += h);
 
+                // 宿主事件处理器先修改元素变换；随后仅由当前卡片在渲染阶段
+                // 重新定位工具栏，既能跟随拖动/缩放，也不会让多张卡片相互竞争。
+                cardView.MouseMove += (s, args) =>
+                {
+                    if (args.LeftButton == MouseButtonState.Pressed)
+                        QueueSelectionToolbarUpdate(mainWindow, cardView);
+                };
+                cardView.MouseWheel += (s, args) => QueueSelectionToolbarUpdate(mainWindow, cardView);
+                cardView.MouseLeftButtonUp += (s, args) => QueueSelectionToolbarUpdate(mainWindow, cardView);
+                cardView.TouchUp += (s, args) => QueueSelectionToolbarUpdate(mainWindow, cardView);
+                cardView.ManipulationDelta += (s, args) => QueueSelectionToolbarUpdate(mainWindow, cardView);
+                cardView.ManipulationCompleted += (s, args) => QueueSelectionToolbarUpdate(mainWindow, cardView);
+
                 cardView.IsManipulationEnabled = true;
                 cardView.Cursor = Cursors.Hand;
                 cardView.IsHitTestVisible = true;
@@ -336,11 +350,13 @@ namespace QuickDictForICC.Services
 
                 // 选中后手动显示工具栏（ICC 的 SelectElement 对非图片元素会隐藏工具栏）
                 cardView.SelectionRequested += (s, args) =>
-                    ShowSelectionToolbar(mainWindow, cardView);
+                {
+                    QueueShowSelectionToolbar(mainWindow, cardView);
+                };
 
-                // 拖动/缩放/旋转时持续更新工具栏位置
-                cardView.LayoutUpdated += (s, args) =>
-                    UpdateSelectionToolbarPosition(mainWindow, cardView);
+                // ShowImageResizeHandles 会由 ICC 宿主自行跟踪已选元素的布局变化。
+                // 不再订阅每张卡片的 LayoutUpdated；多张卡片同时触发该事件会争用
+                // 宿主唯一的“旋转 / 删除”选择工具栏，造成位置来回跳动、闪烁。
             }
             catch (Exception ex)
             {
@@ -401,6 +417,7 @@ namespace QuickDictForICC.Services
 
             try
             {
+                _activeSelectionElement = element;
                 var mainWindowType = mainWindow.GetType();
 
                 var toolbarField = mainWindowType.GetField(
@@ -429,33 +446,49 @@ namespace QuickDictForICC.Services
         }
 
         /// <summary>
-        /// 通过反射更新工具栏位置（拖动/缩放过程中调用）。
+        /// 在控件完成首次布局且宿主完成工具切换后，再显示选择工具栏。
+        /// 否则 ICC 会基于尚未生效的 Canvas 坐标把工具栏定位到左侧。
         /// </summary>
-        private void UpdateSelectionToolbarPosition(object mainWindow, FrameworkElement element)
+        private void QueueShowSelectionToolbar(object mainWindow, FrameworkElement element)
         {
-            if (mainWindow == null || element == null) return;
+            if (_dispatcher == null || mainWindow == null || element == null)
+                return;
 
-            try
+            _activeSelectionElement = element;
+            _dispatcher.BeginInvoke(new Action(() =>
             {
-                var mainWindowType = mainWindow.GetType();
+                if (!ReferenceEquals(_activeSelectionElement, element) || !element.IsLoaded)
+                    return;
 
-                var toolbarField = mainWindowType.GetField(
-                    "BorderImageSelectionControl",
-                    BindingFlags.NonPublic | BindingFlags.Instance);
-                var toolbar = toolbarField?.GetValue(mainWindow) as FrameworkElement;
+                ShowSelectionToolbar(mainWindow, element);
+            }), DispatcherPriority.Loaded);
+        }
 
-                if (toolbar?.Visibility == Visibility.Visible)
+        /// <summary>
+        /// 等宿主完成当前输入事件中的 RenderTransform 更新后，再定位唯一的选择工具栏。
+        /// </summary>
+        private void QueueSelectionToolbarUpdate(object mainWindow, FrameworkElement element)
+        {
+            if (_dispatcher == null || !ReferenceEquals(_activeSelectionElement, element))
+                return;
+
+            _dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (!ReferenceEquals(_activeSelectionElement, element) || !element.IsLoaded)
+                    return;
+
+                try
                 {
-                    var updatePosMethod = mainWindowType.GetMethod(
+                    var method = mainWindow.GetType().GetMethod(
                         "UpdateImageSelectionToolbarPosition",
                         BindingFlags.NonPublic | BindingFlags.Instance);
-                    updatePosMethod?.Invoke(mainWindow, new object[] { element });
+                    method?.Invoke(mainWindow, new object[] { element });
                 }
-            }
-            catch (Exception ex)
-            {
-                LogDiagnostic($"UpdateSelectionToolbarPosition failed: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    LogDiagnostic($"UpdateSelectionToolbarPosition failed: {ex.Message}");
+                }
+            }), DispatcherPriority.Render);
         }
 
         /// <summary>

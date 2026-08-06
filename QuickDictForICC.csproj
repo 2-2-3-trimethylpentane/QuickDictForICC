@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
     <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
     <PackageReference Include="System.Text.Json" Version="6.0.10" />
   </ItemGroup>
 
@@ -31,6 +32,12 @@
 
 
   <!-- 自动将 manifest.json 复制到输出目录 -->
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
+    <EmbeddedResource Remove="tests\**\*.resx" />
+    <None Remove="tests\**\*" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -48,5 +55,28 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
+
+  <!-- ICC dynamically loads plugins and does not resolve NuGet native assets through
+       this plugin's .deps.json. Put the x64 WebView2 loader beside the plugin DLL so
+       WebView2's P/Invoke can find it in the plugin assembly directory. -->
+  <Target Name="CopyWebView2LoaderToPluginOutput" AfterTargets="Build">
+    <PropertyGroup>
+      <WebView2LoaderSource>$(OutDir)runtimes\win-x64\native\WebView2Loader.dll</WebView2LoaderSource>
+    </PropertyGroup>
+    <Copy SourceFiles="$(WebView2LoaderSource)"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(WebView2LoaderSource)')" />
+  </Target>
+
+  <Target Name="CopyWebView2LoaderToPluginPublish" AfterTargets="Publish">
+    <PropertyGroup>
+      <WebView2LoaderSource>$(PublishDir)runtimes\win-x64\native\WebView2Loader.dll</WebView2LoaderSource>
+    </PropertyGroup>
+    <Copy SourceFiles="$(WebView2LoaderSource)"
+          DestinationFolder="$(PublishDir)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(WebView2LoaderSource)')" />
+  </Target>
 
 </Project>

@@ -1,7 +1,8 @@
-/.vs
-/bin
-/obj
-/.trae
-/packages
-/tests/QuickDictForICC.Tests/bin
-/tests/QuickDictForICC.Tests/obj
+## IDE & Editor
+.vs/
+.trae/
+
+## Build outputs (C# / .NET)
+bin/
+obj/
+packages/

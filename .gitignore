@@ -3,3 +3,5 @@
 /obj
 /.trae
 /packages
+/tests/QuickDictForICC.Tests/bin
+/tests/QuickDictForICC.Tests/obj

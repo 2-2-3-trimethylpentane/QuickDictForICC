@@ -309,7 +309,7 @@
     <value>选择 ECDICT 数据文件</value>
   </data>
   <data name="Settings_Dialog_CsvFilter" xml:space="preserve">
-    <value>CSV 文件|*.csv|所有文件|*.*</value>
+    <value>ECDICT 数据文件|*.db;*.csv|SQLite 数据库|*.db|CSV 文件|*.csv|所有文件|*.*</value>
   </data>
   <data name="Settings_Dialog_MDictTitle" xml:space="preserve">
     <value>选择 MDict 词典文件</value>

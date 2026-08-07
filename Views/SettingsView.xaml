@@ -27,14 +27,18 @@
                 <ui:SettingsExpander.Items>
                     <ui:SettingsCard Header="{x:Static p:Resources.Settings_EcDictPathHeader}"
                                      Description="{x:Static p:Resources.Settings_EcDictPathDescription}">
-                        <Grid>
+                        <Grid Width="420"
+                              MinWidth="0"
+                              HorizontalAlignment="Left">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*" MinWidth="0"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="EcDictPathTextBox"
                                      Grid.Column="0"
-                                     IsReadOnly="True"/>
+                                     MinWidth="0"
+                                     TextWrapping="NoWrap"
+                                     HorizontalScrollBarVisibility="Hidden"/>
                             <Button x:Name="BrowseEcDictButton"
                                     Grid.Column="1"
                                     Content="{x:Static p:Resources.Settings_BrowseButton}"
@@ -44,14 +48,18 @@
 
                     <ui:SettingsCard Header="{x:Static p:Resources.Settings_MDictPathHeader}"
                                      Description="{x:Static p:Resources.Settings_MDictPathDescription}">
-                        <Grid>
+                        <Grid Width="420"
+                              MinWidth="0"
+                              HorizontalAlignment="Left">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*" MinWidth="0"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="MDictPathTextBox"
                                      Grid.Column="0"
-                                     IsReadOnly="True"/>
+                                     MinWidth="0"
+                                     TextWrapping="NoWrap"
+                                     HorizontalScrollBarVisibility="Hidden"/>
                             <Button x:Name="BrowseMDictButton"
                                     Grid.Column="1"
                                     Content="{x:Static p:Resources.Settings_BrowseButton}"
@@ -61,14 +69,18 @@
 
                     <ui:SettingsCard Header="{x:Static p:Resources.Settings_MDictResourcePathHeader}"
                                      Description="{x:Static p:Resources.Settings_MDictResourcePathDescription}">
-                        <Grid>
+                        <Grid Width="420"
+                              MinWidth="0"
+                              HorizontalAlignment="Left">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*" MinWidth="0"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="MDictResourcePathTextBox"
                                      Grid.Column="0"
-                                     IsReadOnly="True"/>
+                                     MinWidth="0"
+                                     TextWrapping="NoWrap"
+                                     HorizontalScrollBarVisibility="Hidden"/>
                             <Button x:Name="BrowseMDictResourceButton"
                                     Grid.Column="1"
                                     Content="{x:Static p:Resources.Settings_BrowseButton}"

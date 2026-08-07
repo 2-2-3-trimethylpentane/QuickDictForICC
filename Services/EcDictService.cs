@@ -1,5 +1,7 @@
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,29 +10,22 @@ using System.Threading.Tasks;
 
 namespace QuickDictForICC.Services
 {
-    /// <summary>
-    /// ECDICT 数据文件读取服务。
-    /// 支持常见 CSV 格式（含 word、phonetic、definition、translation、pos、exchange 等列）。
-    /// </summary>
     public class EcDictService : IDictionaryService
     {
-        private readonly string _csvPath;
-        private readonly Dictionary<string, WordEntry> _entries;
+        private readonly string _sourcePath;
+        private readonly Dictionary<string, WordEntry> _fallbackEntries;
+        private string _databasePath;
+        private string _entrySelectSql;
+        private bool _useDatabase;
 
-        /// <inheritdoc />
         public bool IsLoaded { get; private set; }
 
-        /// <summary>
-        /// 初始化 <see cref="EcDictService"/>。
-        /// </summary>
-        /// <param name="csvPath">ECDICT CSV 文件路径；可为空，表示不加载。</param>
-        public EcDictService(string csvPath)
+        public EcDictService(string path)
         {
-            _csvPath = csvPath;
-            _entries = new Dictionary<string, WordEntry>(StringComparer.OrdinalIgnoreCase);
+            _sourcePath = path;
+            _fallbackEntries = new Dictionary<string, WordEntry>(StringComparer.OrdinalIgnoreCase);
         }
 
-        /// <inheritdoc />
         public void Load()
         {
             Load(CancellationToken.None);
@@ -39,75 +34,47 @@ namespace QuickDictForICC.Services
         private void Load(CancellationToken cancellationToken)
         {
             IsLoaded = false;
-            _entries.Clear();
+            _useDatabase = false;
+            _databasePath = null;
+            _entrySelectSql = null;
+            _fallbackEntries.Clear();
 
-            if (string.IsNullOrWhiteSpace(_csvPath))
-                return;
-
-            if (!File.Exists(_csvPath))
+            if (string.IsNullOrWhiteSpace(_sourcePath) || !File.Exists(_sourcePath))
                 return;
 
             try
             {
-                using var stream = new FileStream(_csvPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                using var reader = new StreamReader(stream, Encoding.UTF8);
-
-                var headerLine = reader.ReadLine();
-                if (string.IsNullOrWhiteSpace(headerLine))
-                    return;
-
-                var headers = ParseCsvLine(headerLine);
-                int wordIndex = headers.IndexOf("word");
-                int phoneticIndex = headers.IndexOf("phonetic");
-                int definitionIndex = headers.IndexOf("definition");
-                int translationIndex = headers.IndexOf("translation");
-                int posIndex = headers.IndexOf("pos");
-                int exchangeIndex = headers.IndexOf("exchange");
-                int phraseIndex = headers.FindIndex(h => string.Equals(h, "phrase", StringComparison.OrdinalIgnoreCase));
-                int sentenceIndex = headers.FindIndex(h => string.Equals(h, "sentence", StringComparison.OrdinalIgnoreCase));
-                int synonymIndex = headers.FindIndex(h => string.Equals(h, "synonym", StringComparison.OrdinalIgnoreCase));
-
-                // ECDICT 必须有 word 列
-                if (wordIndex < 0)
-                    return;
-
-                int lineCount = 0;
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                cancellationToken.ThrowIfCancellationRequested();
+                string extension = Path.GetExtension(_sourcePath);
+                if (string.Equals(extension, ".db", StringComparison.OrdinalIgnoreCase))
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    if (string.IsNullOrWhiteSpace(line))
-                        continue;
-
-                    var fields = ParseCsvLine(line);
-                    if (fields.Count <= wordIndex)
-                        continue;
-
-                    string word = fields[wordIndex];
-                    if (string.IsNullOrWhiteSpace(word))
-                        continue;
-
-                    _entries[word] = new WordEntry
+                    if (OpenDatabase(_sourcePath, out string entrySelectSql))
                     {
-                        Word = word,
-                        Phonetic = GetField(fields, phoneticIndex),
-                        Definition = GetField(fields, definitionIndex),
-                        Translation = GetField(fields, translationIndex),
-                        Pos = GetField(fields, posIndex),
-                        Exchange = GetField(fields, exchangeIndex),
-                        Source = "ECDICT",
-                        Phrases = SplitListField(GetField(fields, phraseIndex)),
-                        Sentences = SplitListField(GetField(fields, sentenceIndex)),
-                        Synonyms = SplitListField(GetField(fields, synonymIndex))
-                    };
-
-                    // 每处理 1000 行再检查一次取消，平衡响应与性能。
-                    if (++lineCount % 1000 == 0)
-                        cancellationToken.ThrowIfCancellationRequested();
+                        _databasePath = _sourcePath;
+                        _entrySelectSql = entrySelectSql;
+                        _useDatabase = true;
+                        IsLoaded = true;
+                    }
+                    return;
                 }
 
-                IsLoaded = _entries.Count > 0;
+                if (!string.Equals(extension, ".csv", StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                string cachedDatabasePath = Path.ChangeExtension(_sourcePath, ".db");
+                if (!File.Exists(cachedDatabasePath) || File.GetLastWriteTimeUtc(cachedDatabasePath) < File.GetLastWriteTimeUtc(_sourcePath))
+                    ConvertCsvToDatabase(_sourcePath, cachedDatabasePath, cancellationToken);
+
+                if (OpenDatabase(cachedDatabasePath, out string cachedEntrySelectSql))
+                {
+                    _databasePath = cachedDatabasePath;
+                    _entrySelectSql = cachedEntrySelectSql;
+                    _useDatabase = true;
+                    IsLoaded = true;
+                    return;
+                }
+
+                LoadCsvFallback(_sourcePath, cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -116,11 +83,23 @@ namespace QuickDictForICC.Services
             }
             catch
             {
-                IsLoaded = false;
+                try
+                {
+                    if (string.Equals(Path.GetExtension(_sourcePath), ".csv", StringComparison.OrdinalIgnoreCase))
+                        LoadCsvFallback(_sourcePath, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    IsLoaded = false;
+                    throw;
+                }
+                catch
+                {
+                    IsLoaded = false;
+                }
             }
         }
 
-        /// <inheritdoc />
         public Task LoadAsync(CancellationToken cancellationToken = default)
         {
             return Task.Run(() =>
@@ -131,84 +110,317 @@ namespace QuickDictForICC.Services
             }, cancellationToken);
         }
 
-        /// <inheritdoc />
         public IWordEntry Lookup(string word)
         {
             if (string.IsNullOrWhiteSpace(word) || !IsLoaded)
                 return null;
 
-            if (_entries.TryGetValue(word, out var entry))
-                return entry;
+            if (!_useDatabase)
+                return _fallbackEntries.TryGetValue(word, out WordEntry fallbackEntry) ? fallbackEntry : null;
 
-            return null;
+            using var connection = OpenConnection(_databasePath);
+            using var command = connection.CreateCommand();
+            command.CommandText = _entrySelectSql + " WHERE word = $word COLLATE NOCASE LIMIT 1";
+            command.Parameters.AddWithValue("$word", word);
+            using var reader = command.ExecuteReader();
+            return reader.Read() ? ReadEntry(reader) : null;
         }
 
-        /// <summary>
-        /// 根据前缀获取候选单词列表（大小写不敏感）。
-        /// </summary>
-        /// <param name="prefix">前缀。</param>
-        /// <param name="maxCount">最大返回数量。</param>
-        /// <returns>候选单词集合。</returns>
         public IEnumerable<string> GetSuggestions(string prefix, int maxCount)
         {
-            if (string.IsNullOrWhiteSpace(prefix) || maxCount <= 0 || !IsLoaded || _entries == null || _entries.Count == 0)
+            if (string.IsNullOrWhiteSpace(prefix) || maxCount <= 0 || !IsLoaded)
                 return Enumerable.Empty<string>();
 
-            return _entries.Keys
-                .Where(key => key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                .Take(maxCount);
+            if (!_useDatabase)
+            {
+                return _fallbackEntries.Keys
+                    .Where(key => key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    .Take(maxCount)
+                    .ToList();
+            }
+
+            var suggestions = new List<string>(maxCount);
+            using var connection = OpenConnection(_databasePath);
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT word FROM entries WHERE word LIKE $prefix || '%' COLLATE NOCASE ORDER BY word COLLATE NOCASE LIMIT $maxCount";
+            command.Parameters.AddWithValue("$prefix", prefix);
+            command.Parameters.AddWithValue("$maxCount", maxCount);
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+                suggestions.Add(reader.GetString(0));
+            return suggestions;
+        }
+
+        private static bool OpenDatabase(string path, out string entrySelectSql)
+        {
+            entrySelectSql = null;
+            if (!File.Exists(path))
+                return false;
+
+            using var connection = OpenConnection(path);
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'entries'";
+            if (Convert.ToInt32(command.ExecuteScalar()) != 1)
+                return false;
+
+            var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            command.CommandText = "PRAGMA table_info(entries)";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+                columns.Add(reader.GetString(1));
+
+            string[] requiredColumns = { "word", "phonetic", "definition", "translation", "pos", "exchange" };
+            if (requiredColumns.Any(column => !columns.Contains(column)))
+                return false;
+
+            entrySelectSql = "SELECT word, phonetic, definition, translation, pos, exchange, "
+                + SelectColumnOrNull(columns, "phrase") + ", "
+                + SelectColumnOrNull(columns, "sentence") + ", "
+                + SelectColumnOrNull(columns, "synonym")
+                + " FROM entries";
+            return true;
+        }
+
+        private static string SelectColumnOrNull(ISet<string> columns, string column)
+        {
+            return columns.Contains(column) ? column : "NULL";
+        }
+
+        private static SqliteConnection OpenConnection(string path)
+        {
+            var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+            {
+                DataSource = path,
+                Mode = SqliteOpenMode.ReadOnly,
+                Cache = SqliteCacheMode.Shared,
+                Pooling = false
+            }.ToString());
+            connection.Open();
+            return connection;
+        }
+
+        private static WordEntry ReadEntry(IDataRecord record)
+        {
+            return new WordEntry
+            {
+                Word = GetRecordValue(record, 0),
+                Phonetic = GetRecordValue(record, 1),
+                Definition = GetRecordValue(record, 2),
+                Translation = GetRecordValue(record, 3),
+                Pos = GetRecordValue(record, 4),
+                Exchange = GetRecordValue(record, 5),
+                Source = "ECDICT",
+                Phrases = SplitListField(GetRecordValue(record, 6)),
+                Sentences = SplitListField(GetRecordValue(record, 7)),
+                Synonyms = SplitListField(GetRecordValue(record, 8))
+            };
+        }
+
+        private static string GetRecordValue(IDataRecord record, int index)
+        {
+            return record.IsDBNull(index) ? null : record.GetString(index);
+        }
+
+        private static void ConvertCsvToDatabase(string csvPath, string databasePath, CancellationToken cancellationToken)
+        {
+            string temporaryPath = databasePath + ".tmp";
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+
+            try
+            {
+                using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+                {
+                    DataSource = temporaryPath,
+                    Mode = SqliteOpenMode.ReadWriteCreate,
+                    Pooling = false
+                }.ToString()))
+                {
+                    connection.Open();
+                    using var transaction = connection.BeginTransaction();
+                    ExecuteNonQuery(connection, transaction, "CREATE TABLE entries (word TEXT NOT NULL, phonetic TEXT, definition TEXT, translation TEXT, pos TEXT, exchange TEXT, phrase TEXT, sentence TEXT, synonym TEXT)");
+                    using var insert = connection.CreateCommand();
+                    insert.Transaction = transaction;
+                    insert.CommandText = "INSERT INTO entries (word, phonetic, definition, translation, pos, exchange, phrase, sentence, synonym) VALUES ($word, $phonetic, $definition, $translation, $pos, $exchange, $phrase, $sentence, $synonym)";
+                    foreach (string parameter in new[] { "$word", "$phonetic", "$definition", "$translation", "$pos", "$exchange", "$phrase", "$sentence", "$synonym" })
+                        insert.Parameters.Add(parameter, SqliteType.Text);
+
+                    using var stream = new FileStream(csvPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    using var reader = new StreamReader(stream, Encoding.UTF8);
+                    string headerLine = reader.ReadLine();
+                    if (string.IsNullOrWhiteSpace(headerLine))
+                        throw new InvalidDataException("ECDICT CSV header is empty.");
+
+                    List<string> headers = ParseCsvLine(headerLine);
+                    int wordIndex = FindHeader(headers, "word");
+                    if (wordIndex < 0)
+                        throw new InvalidDataException("ECDICT CSV does not contain a word column.");
+
+                    int phoneticIndex = FindHeader(headers, "phonetic");
+                    int definitionIndex = FindHeader(headers, "definition");
+                    int translationIndex = FindHeader(headers, "translation");
+                    int posIndex = FindHeader(headers, "pos");
+                    int exchangeIndex = FindHeader(headers, "exchange");
+                    int phraseIndex = FindHeader(headers, "phrase");
+                    int sentenceIndex = FindHeader(headers, "sentence");
+                    int synonymIndex = FindHeader(headers, "synonym");
+                    int lineCount = 0;
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        if (string.IsNullOrWhiteSpace(line))
+                            continue;
+
+                        List<string> fields = ParseCsvLine(line);
+                        string word = GetField(fields, wordIndex);
+                        if (string.IsNullOrWhiteSpace(word))
+                            continue;
+
+                        insert.Parameters["$word"].Value = word;
+                        insert.Parameters["$phonetic"].Value = GetDbValue(fields, phoneticIndex);
+                        insert.Parameters["$definition"].Value = GetDbValue(fields, definitionIndex);
+                        insert.Parameters["$translation"].Value = GetDbValue(fields, translationIndex);
+                        insert.Parameters["$pos"].Value = GetDbValue(fields, posIndex);
+                        insert.Parameters["$exchange"].Value = GetDbValue(fields, exchangeIndex);
+                        insert.Parameters["$phrase"].Value = GetDbValue(fields, phraseIndex);
+                        insert.Parameters["$sentence"].Value = GetDbValue(fields, sentenceIndex);
+                        insert.Parameters["$synonym"].Value = GetDbValue(fields, synonymIndex);
+                        insert.ExecuteNonQuery();
+
+                        if (++lineCount % 1000 == 0)
+                            cancellationToken.ThrowIfCancellationRequested();
+                    }
+
+                    ExecuteNonQuery(connection, transaction, "CREATE INDEX idx_entries_word_nocase ON entries(word COLLATE NOCASE)");
+                    transaction.Commit();
+                }
+
+                File.Move(temporaryPath, databasePath, true);
+            }
+            catch
+            {
+                if (File.Exists(temporaryPath))
+                    File.Delete(temporaryPath);
+                throw;
+            }
+        }
+
+        private void LoadCsvFallback(string csvPath, CancellationToken cancellationToken)
+        {
+            using var stream = new FileStream(csvPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            string headerLine = reader.ReadLine();
+            if (string.IsNullOrWhiteSpace(headerLine))
+                return;
+
+            List<string> headers = ParseCsvLine(headerLine);
+            int wordIndex = FindHeader(headers, "word");
+            if (wordIndex < 0)
+                return;
+
+            int phoneticIndex = FindHeader(headers, "phonetic");
+            int definitionIndex = FindHeader(headers, "definition");
+            int translationIndex = FindHeader(headers, "translation");
+            int posIndex = FindHeader(headers, "pos");
+            int exchangeIndex = FindHeader(headers, "exchange");
+            int phraseIndex = FindHeader(headers, "phrase");
+            int sentenceIndex = FindHeader(headers, "sentence");
+            int synonymIndex = FindHeader(headers, "synonym");
+            string line;
+            int lineCount = 0;
+            while ((line = reader.ReadLine()) != null)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                List<string> fields = ParseCsvLine(line);
+                string word = GetField(fields, wordIndex);
+                if (string.IsNullOrWhiteSpace(word))
+                    continue;
+
+                _fallbackEntries[word] = new WordEntry
+                {
+                    Word = word,
+                    Phonetic = GetField(fields, phoneticIndex),
+                    Definition = GetField(fields, definitionIndex),
+                    Translation = GetField(fields, translationIndex),
+                    Pos = GetField(fields, posIndex),
+                    Exchange = GetField(fields, exchangeIndex),
+                    Source = "ECDICT",
+                    Phrases = SplitListField(GetField(fields, phraseIndex)),
+                    Sentences = SplitListField(GetField(fields, sentenceIndex)),
+                    Synonyms = SplitListField(GetField(fields, synonymIndex))
+                };
+
+                if (++lineCount % 1000 == 0)
+                    cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            IsLoaded = _fallbackEntries.Count > 0;
+        }
+
+        private static void ExecuteNonQuery(SqliteConnection connection, SqliteTransaction transaction, string sql)
+        {
+            using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
+
+        private static object GetDbValue(IList<string> fields, int index)
+        {
+            return string.IsNullOrEmpty(GetField(fields, index)) ? DBNull.Value : GetField(fields, index);
+        }
+
+        private static int FindHeader(IList<string> headers, string name)
+        {
+            for (int i = 0; i < headers.Count; i++)
+            {
+                if (string.Equals(headers[i], name, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            }
+            return -1;
         }
 
         private static string GetField(IList<string> fields, int index)
         {
             if (index < 0 || index >= fields.Count)
                 return null;
-
             string value = fields[index];
             return string.IsNullOrEmpty(value) ? null : value;
         }
 
-        /// <summary>
-        /// 将 CSV 列表字段按常见分隔符拆分，过滤空条目。
-        /// 支持换行符、分号、管道符以及字面量 "\n"。
-        /// </summary>
         private static List<string> SplitListField(string value)
         {
             var list = new List<string>();
             if (string.IsNullOrWhiteSpace(value))
                 return list;
 
-            // 先处理字面量 "\n"，再按实际分隔符拆分。
             string normalized = value.Replace("\\n", "\n");
-            char[] separators = new[] { '\n', ';', '|' };
-            foreach (string part in normalized.Split(separators, StringSplitOptions.RemoveEmptyEntries))
+            foreach (string part in normalized.Split(new[] { '\n', ';', '|' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 string trimmed = part.Trim();
                 if (!string.IsNullOrEmpty(trimmed))
                     list.Add(trimmed);
             }
-
             return list;
         }
 
-        /// <summary>
-        /// 简易 CSV 行解析，支持双引号包裹字段及转义引号。
-        /// </summary>
         private static List<string> ParseCsvLine(string line)
         {
             var fields = new List<string>();
-            var sb = new StringBuilder();
+            var value = new StringBuilder();
             bool inQuotes = false;
-
             for (int i = 0; i < line.Length; i++)
             {
-                char c = line[i];
-
-                if (c == '"')
+                char current = line[i];
+                if (current == '"')
                 {
                     if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
                     {
-                        sb.Append('"');
+                        value.Append('"');
                         i++;
                     }
                     else
@@ -216,18 +428,17 @@ namespace QuickDictForICC.Services
                         inQuotes = !inQuotes;
                     }
                 }
-                else if (c == ',' && !inQuotes)
+                else if (current == ',' && !inQuotes)
                 {
-                    fields.Add(sb.ToString());
-                    sb.Clear();
+                    fields.Add(value.ToString());
+                    value.Clear();
                 }
                 else
                 {
-                    sb.Append(c);
+                    value.Append(current);
                 }
             }
-
-            fields.Add(sb.ToString());
+            fields.Add(value.ToString());
             return fields;
         }
     }

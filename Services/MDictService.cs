@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -69,11 +71,17 @@ namespace QuickDictForICC.Services
 
         public void Load()
         {
+            Load(CancellationToken.None);
+        }
+
+        private void Load(CancellationToken cancellationToken)
+        {
             if (string.IsNullOrWhiteSpace(_mdxPath) || !File.Exists(_mdxPath))
                 return;
 
+            cancellationToken.ThrowIfCancellationRequested();
             _reader?.Dispose();
-            _reader = new MinimalMdxReader(_mdxPath, _log);
+            _reader = new MinimalMdxReader(_mdxPath, _log, cancellationToken);
             IsLoaded = true;
         }
 
@@ -82,7 +90,7 @@ namespace QuickDictForICC.Services
             return Task.Run(() =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                Load();
+                Load(cancellationToken);
             }, cancellationToken);
         }
 
@@ -98,10 +106,26 @@ namespace QuickDictForICC.Services
             return new WordEntry
             {
                 Word = word,
-                HtmlDefinition = html,
+                HtmlDefinition = CreateHtmlDefinition(html),
                 Definition = html,
                 Source = "MDict"
             };
+        }
+
+        private static string CreateHtmlDefinition(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            if (Regex.IsMatch(value, @"<\s*(html|body|div|p|br|table|span|img|style|font)\b", RegexOptions.IgnoreCase))
+                return value;
+
+            string escaped = WebUtility.HtmlEncode(value)
+                .Replace("\\r\\n", "<br>")
+                .Replace("\\n", "<br>")
+                .Replace("\r\n", "<br>")
+                .Replace("\n", "<br>");
+            return "<html><head><meta charset=\"utf-8\"><style>body{font-family:'Microsoft YaHei UI',sans-serif;font-size:18px;line-height:1.6;white-space:normal;}</style></head><body>" + escaped + "</body></html>";
         }
 
         public IReadOnlyList<string> Suggest(string prefix, int maxResults = 10)
@@ -127,10 +151,11 @@ namespace QuickDictForICC.Services
         private readonly string _encodingName;
         private readonly Encoding _encoding;
         private readonly int _engineVersion;
-        private readonly List<KeyEntry> _entries;
-        private readonly Dictionary<string, int> _keyIndex;
-        private readonly Dictionary<string, int> _keyIndexIgnoreCase;
+        private readonly List<KeyBlockInfo> _keyBlocks;
+        private readonly Dictionary<int, List<KeyEntry>> _keyBlockCache;
+        private readonly object _syncRoot;
         private readonly List<RecordBlockInfo> _recordBlocks;
+        private readonly Dictionary<int, byte[]> _recordBlockCache;
         private readonly CancellationToken _cancellationToken;
         private readonly Action<string> _log;
         private readonly bool _keyInfoEncrypted;
@@ -145,11 +170,21 @@ namespace QuickDictForICC.Services
             public long Offset { get; set; }
         }
 
+        private sealed class KeyBlockInfo
+        {
+            public long CompressedSize { get; set; }
+            public long DecompressedSize { get; set; }
+            public long Offset { get; set; }
+            public string FirstKey { get; set; }
+            public string LastKey { get; set; }
+        }
+
         private sealed class RecordBlockInfo
         {
             public long CompressedSize { get; set; }
             public long DecompressedSize { get; set; }
             public long Offset { get; set; }
+            public long DecompressedOffset { get; set; }
         }
 
         private void Log(string message) => _log?.Invoke($"[MinimalMdxReader] {message}");
@@ -159,10 +194,11 @@ namespace QuickDictForICC.Services
             _stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             _log = log;
             _cancellationToken = cancellationToken;
-            _entries = new List<KeyEntry>();
-            _keyIndex = new Dictionary<string, int>(StringComparer.Ordinal);
-            _keyIndexIgnoreCase = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            _keyBlocks = new List<KeyBlockInfo>();
+            _keyBlockCache = new Dictionary<int, List<KeyEntry>>();
+            _syncRoot = new object();
             _recordBlocks = new List<RecordBlockInfo>();
+            _recordBlockCache = new Dictionary<int, byte[]>();
 
             var swTotal = Stopwatch.StartNew();
             Log("=== MinimalMdxReader 构造开始 ===");
@@ -198,7 +234,7 @@ namespace QuickDictForICC.Services
             sw.Restart();
             ReadKeyBlocks();
             sw.Stop();
-            Log($"ReadKeyBlocks 完成, 耗时 {sw.ElapsedMilliseconds}ms, 共解析 {_entries.Count} 个词条");
+            Log($"ReadKeyBlocks 完成, 耗时 {sw.ElapsedMilliseconds}ms, 已建立 {_keyBlocks.Count} 个 key block 元数据索引");
 
             _cancellationToken.ThrowIfCancellationRequested();
 
@@ -222,11 +258,26 @@ namespace QuickDictForICC.Services
             if (string.IsNullOrWhiteSpace(prefix) || maxResults <= 0)
                 return Array.Empty<string>();
 
-            return _entries
-                .Where(entry => entry.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                .Take(maxResults)
-                .Select(entry => entry.Key)
-                .ToList();
+            int blockIndex = FindKeyBlock(prefix);
+            if (blockIndex < 0)
+                return Array.Empty<string>();
+
+            var suggestions = new List<string>(maxResults);
+            for (int index = blockIndex; index < _keyBlocks.Count && suggestions.Count < maxResults; index++)
+            {
+                foreach (KeyEntry entry in GetKeyBlockEntries(index))
+                {
+                    if (entry.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        suggestions.Add(entry.Key);
+                    else if (string.Compare(entry.Key, prefix, StringComparison.OrdinalIgnoreCase) > 0 && suggestions.Count > 0)
+                        return suggestions;
+
+                    if (suggestions.Count == maxResults)
+                        return suggestions;
+                }
+            }
+
+            return suggestions;
         }
 
         public string Lookup(string word)
@@ -237,11 +288,19 @@ namespace QuickDictForICC.Services
             string currentWord = word;
             for (int redirectDepth = 0; redirectDepth < 8; redirectDepth++)
             {
-                if (!_keyIndexIgnoreCase.TryGetValue(currentWord, out int index))
+                int blockIndex = FindKeyBlock(currentWord);
+                if (blockIndex < 0)
                     return null;
 
-                long startOffset = _entries[index].Offset;
-                long endOffset = index + 1 < _entries.Count ? _entries[index + 1].Offset : _totalRecordSize;
+                List<KeyEntry> entries = GetKeyBlockEntries(blockIndex);
+                int entryIndex = entries.FindIndex(entry => string.Equals(entry.Key, currentWord, StringComparison.OrdinalIgnoreCase));
+                if (entryIndex < 0)
+                    return null;
+
+                long startOffset = entries[entryIndex].Offset;
+                long endOffset = entryIndex + 1 < entries.Count
+                    ? entries[entryIndex + 1].Offset
+                    : GetNextEntryOffset(blockIndex);
                 string record = ReadRecord(startOffset, endOffset);
                 if (record == null)
                     return null;
@@ -260,6 +319,43 @@ namespace QuickDictForICC.Services
 
             Log($"Lookup('{word}'): 重定向层级超过上限");
             return null;
+        }
+
+        private int FindKeyBlock(string word)
+        {
+            int low = 0;
+            int high = _keyBlocks.Count - 1;
+            while (low <= high)
+            {
+                int middle = low + (high - low) / 2;
+                KeyBlockInfo block = _keyBlocks[middle];
+                if (string.Compare(word, block.FirstKey, StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    high = middle - 1;
+                }
+                else if (string.Compare(word, block.LastKey, StringComparison.OrdinalIgnoreCase) > 0)
+                {
+                    low = middle + 1;
+                }
+                else
+                {
+                    return middle;
+                }
+            }
+
+            return -1;
+        }
+
+        private long GetNextEntryOffset(int blockIndex)
+        {
+            for (int index = blockIndex + 1; index < _keyBlocks.Count; index++)
+            {
+                List<KeyEntry> nextEntries = GetKeyBlockEntries(index);
+                if (nextEntries.Count > 0)
+                    return nextEntries[0].Offset;
+            }
+
+            return _totalRecordSize;
         }
 
         #region Header
@@ -423,19 +519,26 @@ namespace QuickDictForICC.Services
                 throw;
             }
 
-            var blockInfos = new List<(long compSize, long decompSize)>();
             using (var infoStream = new MemoryStream(keyBlockInfo))
             {
                 for (ulong i = 0; i < keyBlockCount; i++)
                 {
-                    ReadNumberBE(infoStream);
-                    SkipKeyText(infoStream);
-                    SkipKeyText(infoStream);
-                    long compSize = (long)ReadUInt64BE(infoStream);
-                    long decompSize = (long)ReadUInt64BE(infoStream);
-                    if (compSize <= 8 || decompSize <= 0)
+                    _cancellationToken.ThrowIfCancellationRequested();
+                    ReadKeyBlockNumber(infoStream);
+                    string firstKey = ReadKeyText(infoStream);
+                    string lastKey = ReadKeyText(infoStream);
+                    long compressedSize = (long)ReadUInt64BE(infoStream);
+                    long decompressedSize = (long)ReadUInt64BE(infoStream);
+                    if (compressedSize <= 8 || decompressedSize <= 0)
                         throw new InvalidDataException($"MDX key block metadata 第 {i + 1} 项的长度无效。");
-                    blockInfos.Add((compSize, decompSize));
+
+                    _keyBlocks.Add(new KeyBlockInfo
+                    {
+                        CompressedSize = compressedSize,
+                        DecompressedSize = decompressedSize,
+                        FirstKey = firstKey,
+                        LastKey = lastKey
+                    });
                 }
 
                 if (infoStream.Position != infoStream.Length)
@@ -443,92 +546,70 @@ namespace QuickDictForICC.Services
             }
 
             ulong declaredKeyBlockSize = 0;
-            foreach (var blockInfo in blockInfos)
-                declaredKeyBlockSize += (ulong)blockInfo.compSize;
-            if (declaredKeyBlockSize != keyBlockSize)
-                throw new InvalidDataException($"MDX key block metadata 数据长度不匹配: 元信息合计 {declaredKeyBlockSize}, 头部声明 {keyBlockSize}。");
-
-            Log($"ReadKeyBlocks: 解析并验证了 {blockInfos.Count} 个 key block 元信息");
-
-            for (ulong i = 0; i < keyBlockCount; i++)
+            long keyBlockOffset = _stream.Position;
+            foreach (KeyBlockInfo keyBlock in _keyBlocks)
             {
-                _cancellationToken.ThrowIfCancellationRequested();
-                var info = blockInfos[(int)i];
-
-                Log($"ReadKeyBlocks: 读取第 {i + 1}/{keyBlockCount} 个 key block, compSize={info.compSize}, decompSize={info.decompSize}");
-                if (info.compSize <= 8 || info.compSize > _stream.Length - _stream.Position)
-                    throw new InvalidDataException("MDX key block 大小无效。");
-                byte[] compData = ReadBytes((int)info.compSize);
-
-                byte[] decompData;
-                try
-                {
-                    decompData = Decompress(compData);
-                }
-                catch (Exception ex)
-                {
-                    Log($"ReadKeyBlocks: 第 {i + 1} 个 key block 解压失败: {ex.Message}");
-                    throw;
-                }
-
-                int beforeCount = _entries.Count;
-                ParseKeyBlock(decompData);
-                int parsedInBlock = _entries.Count - beforeCount;
-                Log($"ReadKeyBlocks: 第 {i + 1} 个 key block 解析出 {parsedInBlock} 个词条, 累计 {_entries.Count}");
+                declaredKeyBlockSize += (ulong)keyBlock.CompressedSize;
+                keyBlock.Offset = keyBlockOffset;
+                keyBlockOffset += keyBlock.CompressedSize;
             }
 
-            Log($"ReadKeyBlocks: 全部完成, 共 {_entries.Count} 个词条");
+            if (declaredKeyBlockSize != keyBlockSize || keyBlockOffset > _stream.Length)
+                throw new InvalidDataException("MDX key block metadata 数据长度不匹配。");
+
+            _stream.Position = keyBlockOffset;
+            Log($"ReadKeyBlocks: 已建立 {_keyBlocks.Count} 个 key block 元数据索引，词条块将按需解压。");
         }
 
-        private void ParseKeyBlock(byte[] data)
+        private List<KeyEntry> GetKeyBlockEntries(int blockIndex)
         {
+            lock (_syncRoot)
+            {
+                if (_keyBlockCache.TryGetValue(blockIndex, out List<KeyEntry> entries))
+                    return entries;
+
+                KeyBlockInfo block = _keyBlocks[blockIndex];
+                _stream.Position = block.Offset;
+                byte[] compressedData = ReadBytes((int)block.CompressedSize);
+                entries = ParseKeyBlock(Decompress(compressedData));
+                if (_keyBlockCache.Count >= 8)
+                    _keyBlockCache.Remove(_keyBlockCache.Keys.First());
+                _keyBlockCache[blockIndex] = entries;
+                return entries;
+            }
+        }
+
+        private List<KeyEntry> ParseKeyBlock(byte[] data)
+        {
+            var entries = new List<KeyEntry>();
             int pos = 0;
             int entryCount = 0;
+            int numberWidth = _engineVersion >= 2 ? 8 : 4;
+            int terminatorWidth = _encoding.CodePage == Encoding.Unicode.CodePage ? 2 : 1;
             while (pos < data.Length)
             {
                 if (++entryCount % 1000 == 0)
                     _cancellationToken.ThrowIfCancellationRequested();
-
-                int numberWidth = _engineVersion >= 2 ? 8 : 4;
                 if (pos + numberWidth > data.Length)
                     break;
 
-                long offset = _engineVersion >= 2
-                    ? (long)ReadUInt64BE(data, pos)
-                    : ReadUInt32BE(data, pos);
+                long offset = _engineVersion >= 2 ? (long)ReadUInt64BE(data, pos) : ReadUInt32BE(data, pos);
                 pos += numberWidth;
-
                 int keyStart = pos;
-                int terminatorWidth = _encoding.CodePage == Encoding.Unicode.CodePage ? 2 : 1;
-                while (pos + terminatorWidth <= data.Length)
-                {
-                    bool terminator = true;
-                    for (int i = 0; i < terminatorWidth; i++)
-                    {
-                        if (data[pos + i] != 0)
-                        {
-                            terminator = false;
-                            break;
-                        }
-                    }
-
-                    if (terminator)
-                        break;
-
+                while (pos + terminatorWidth <= data.Length && !IsTerminator(data, pos, terminatorWidth))
                     pos++;
-                }
-
                 if (pos + terminatorWidth > data.Length)
                     break;
 
-                string keyText = _encoding.GetString(data, keyStart, pos - keyStart);
+                entries.Add(new KeyEntry
+                {
+                    Key = _encoding.GetString(data, keyStart, pos - keyStart),
+                    Offset = offset
+                });
                 pos += terminatorWidth;
-
-                int index = _entries.Count;
-                _entries.Add(new KeyEntry { Key = keyText, Offset = offset });
-                _keyIndex[keyText] = index;
-                _keyIndexIgnoreCase[keyText] = index;
             }
+
+            return entries;
         }
 
         #endregion
@@ -552,6 +633,8 @@ namespace QuickDictForICC.Services
                 throw new InvalidDataException("MDX record block 元数据无效，已停止解析以避免异常内存分配。");
             }
 
+            long dataOffset = _stream.Position + (long)recordBlockInfoSize;
+            long decompressedOffset = 0;
             for (ulong i = 0; i < recordBlockCount; i++)
             {
                 long compressedSize = (long)ReadUInt64BE();
@@ -562,20 +645,18 @@ namespace QuickDictForICC.Services
                 {
                     CompressedSize = compressedSize,
                     DecompressedSize = decompressedSize,
-                    Offset = 0
+                    Offset = dataOffset,
+                    DecompressedOffset = decompressedOffset
                 });
-                _totalRecordSize += decompressedSize;
+                dataOffset += compressedSize;
+                decompressedOffset += decompressedSize;
             }
 
-            long dataOffset = _stream.Position;
-            foreach (RecordBlockInfo block in _recordBlocks)
-            {
-                block.Offset = dataOffset;
-                dataOffset += block.CompressedSize;
-            }
-
+            _totalRecordSize = decompressedOffset;
             if (dataOffset > _stream.Length)
                 throw new InvalidDataException("MDX record block 数据长度不足。");
+
+            _stream.Position += (long)recordBlockSize;
         }
 
         private string ReadRecord(long startOffset, long endOffset)
@@ -592,42 +673,64 @@ namespace QuickDictForICC.Services
                 return null;
             }
 
-            long cumulative = 0;
-            int blockIndex = -1;
-            for (int i = 0; i < _recordBlocks.Count; i++)
-            {
-                if (startOffset < cumulative + _recordBlocks[i].DecompressedSize)
-                {
-                    blockIndex = i;
-                    break;
-                }
-                cumulative += _recordBlocks[i].DecompressedSize;
-            }
-
+            int blockIndex = FindRecordBlock(startOffset);
             if (blockIndex < 0)
             {
                 Log($"ReadRecord: 未找到对应记录块, startOffset={startOffset}, 返回 null");
                 return null;
             }
 
-            var block = _recordBlocks[blockIndex];
-            long offsetInBlock = startOffset - cumulative;
+            RecordBlockInfo block = _recordBlocks[blockIndex];
+            long offsetInBlock = startOffset - block.DecompressedOffset;
             long length = endOffset - startOffset;
             if (length <= 0)
                 return string.Empty;
 
             Log($"ReadRecord: blockIndex={blockIndex}, offsetInBlock={offsetInBlock}, length={length}");
-            _stream.Position = block.Offset;
-            byte[] compData = ReadBytes((int)block.CompressedSize);
-            byte[] decompData = Decompress(compData);
-
-            if (offsetInBlock + length > decompData.Length)
+            byte[] decompressedData = GetRecordBlockData(blockIndex);
+            if (offsetInBlock + length > decompressedData.Length)
             {
-                Log($"ReadRecord: 请求范围超出记录块, offset={offsetInBlock}, length={length}, blockLength={decompData.Length}");
+                Log($"ReadRecord: 请求范围超出记录块, offset={offsetInBlock}, length={length}, blockLength={decompressedData.Length}");
                 return null;
             }
 
-            return _encoding.GetString(decompData, (int)offsetInBlock, (int)length).TrimEnd('\0');
+            return _encoding.GetString(decompressedData, (int)offsetInBlock, (int)length).TrimEnd('\0');
+        }
+
+        private int FindRecordBlock(long offset)
+        {
+            int low = 0;
+            int high = _recordBlocks.Count - 1;
+            while (low <= high)
+            {
+                int middle = low + (high - low) / 2;
+                RecordBlockInfo block = _recordBlocks[middle];
+                if (offset < block.DecompressedOffset)
+                    high = middle - 1;
+                else if (offset >= block.DecompressedOffset + block.DecompressedSize)
+                    low = middle + 1;
+                else
+                    return middle;
+            }
+
+            return -1;
+        }
+
+        private byte[] GetRecordBlockData(int blockIndex)
+        {
+            lock (_syncRoot)
+            {
+                if (_recordBlockCache.TryGetValue(blockIndex, out byte[] data))
+                    return data;
+
+                RecordBlockInfo block = _recordBlocks[blockIndex];
+                _stream.Position = block.Offset;
+                data = Decompress(ReadBytes((int)block.CompressedSize));
+                if (_recordBlockCache.Count >= 4)
+                    _recordBlockCache.Remove(_recordBlockCache.Keys.First());
+                _recordBlockCache[blockIndex] = data;
+                return data;
+            }
         }
 
         #endregion
@@ -730,22 +833,36 @@ namespace QuickDictForICC.Services
             return BitConverter.ToUInt32(data, offset);
         }
 
-        private static ulong ReadNumberBE(Stream stream)
+        private ulong ReadKeyBlockNumber(Stream stream)
         {
-            return _dummyEngineVersion >= 2 ? ReadUInt64BE(stream) : ReadUInt32BE(stream);
+            return _engineVersion >= 2 ? ReadUInt64BE(stream) : ReadUInt32BE(stream);
         }
 
-        private static int _dummyEngineVersion = 2;
-
-        private void SkipKeyText(Stream stream)
+        private string ReadKeyText(Stream stream)
         {
             int length = _engineVersion >= 2 ? (int)ReadUInt16BE(stream) : (int)ReadUInt8(stream);
             int characterWidth = _encoding.CodePage == Encoding.Unicode.CodePage ? 2 : 1;
             int byteLength = checked(length * characterWidth);
-            int terminatorLength = characterWidth;
-            if (byteLength < 0 || stream.Position + byteLength + terminatorLength > stream.Length)
+            if (byteLength < 0 || stream.Position + byteLength + characterWidth > stream.Length)
                 throw new InvalidDataException("MDX key block metadata 文本长度无效。");
-            stream.Position += byteLength + terminatorLength;
+
+            byte[] bytes = new byte[byteLength];
+            int read = stream.Read(bytes, 0, bytes.Length);
+            if (read != bytes.Length)
+                throw new EndOfStreamException("MDX key block metadata 文本数据不足。");
+            stream.Position += characterWidth;
+            return _encoding.GetString(bytes);
+        }
+
+        private static bool IsTerminator(byte[] data, int offset, int width)
+        {
+            for (int index = 0; index < width; index++)
+            {
+                if (data[offset + index] != 0)
+                    return false;
+            }
+
+            return true;
         }
 
         private static ushort ReadUInt16BE(Stream stream)

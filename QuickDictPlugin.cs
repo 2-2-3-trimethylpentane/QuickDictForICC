@@ -176,11 +176,13 @@ namespace QuickDictForICC
         {
             if (string.IsNullOrWhiteSpace(_settings.EcDictPath) || !File.Exists(_settings.EcDictPath))
             {
-                string builtInEcDict = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "ecdict", "ecdict.csv");
+                string pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string builtInEcDict = Path.Combine(pluginDirectory, "ecdict", "ecdict.db");
+                if (!File.Exists(builtInEcDict))
+                    builtInEcDict = Path.Combine(pluginDirectory, "ecdict", "ecdict.csv");
+
                 if (File.Exists(builtInEcDict))
-                {
                     _settings.EcDictPath = builtInEcDict;
-                }
             }
 
             var ecDictService = new EcDictService(_settings.EcDictPath);

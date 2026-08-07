@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.36" />
     <PackageReference Include="System.Text.Json" Version="6.0.10" />
   </ItemGroup>
 
@@ -42,9 +43,9 @@
     <None Include="manifest.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- 自动将内置 ECDICT 词典复制到输出目录 -->
+  <!-- 自动将内置 ECDICT 数据库复制到输出目录 -->
   <ItemGroup>
-    <None Include="ecdict\ecdict.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ecdict\ecdict.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- 本地化资源文件 -->

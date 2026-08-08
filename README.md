@@ -5,6 +5,9 @@ QuickDictForICC 是 [InkCanvasForClass Community Edition](https://github.com/Ink
 >[!warning]
 >项目处于早期开发阶段，目前只能确保插件实例能运行，核心功能尚未完全实现且极度不稳定。现阶段请不要将本插件用于生产环境，感谢您的理解。   
 
+>[!warning]
+>经过评估，mdict支持属于伪需求且实现周期过于漫长，后续将不再优化mdict解析，如果你想做mdict相关内容请自行pr。   
+
 >[!note]
 >本readme文档内容一部分为AI自动撰写，部分内容可能有误，欢迎勘误。   
 

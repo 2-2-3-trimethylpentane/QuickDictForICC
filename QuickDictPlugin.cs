@@ -217,7 +217,7 @@ namespace QuickDictForICC
                 }
             });
 
-            _ttsService = new TtsService();
+            _ttsService = new TtsService(message => _host?.Log(message));
             _wordCardService = new WordCardService();
 
             // 延迟到加载任务结束后再提示词典不可用。

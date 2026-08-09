@@ -18,14 +18,16 @@ namespace QuickDictForICC.Services
         private readonly PiperTtsEngine _piperEngine;
         private readonly string _cacheDirectory;
         private readonly SemaphoreSlim _playbackSemaphore;
+        private readonly Action<string> _log;
 
         private WaveOutEvent _currentWaveOut;
         private CancellationTokenSource _currentPlaybackCts;
 
-        public TtsService()
+        public TtsService(Action<string> log = null)
         {
+            _log = log;
             _edgeEngine = new EdgeTtsEngine();
-            _piperEngine = new PiperTtsEngine();
+            _piperEngine = new PiperTtsEngine(log);
             _playbackSemaphore = new SemaphoreSlim(1, 1);
 
             try
@@ -58,11 +60,29 @@ namespace QuickDictForICC.Services
             {
                 byte[] cached = await File.ReadAllBytesAsync(cachePath, cancellationToken).ConfigureAwait(false);
                 if (cached.Length > 0)
+                {
+                    _log?.Invoke($"[TtsService] 使用缓存音频: engine={options.Engine}, bytes={cached.Length}");
                     return cached;
+                }
             }
 
+            _log?.Invoke($"[TtsService] 缓存未命中，开始合成: engine={options.Engine}");
             ITtsEngine engine = GetEngine(options.Engine);
-            byte[] audio = await engine.SynthesizeAsync(text, options, cancellationToken).ConfigureAwait(false);
+            byte[] audio;
+            try
+            {
+                audio = await engine.SynthesizeAsync(text, options, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (options.Engine == TtsEngineType.Piper)
+            {
+                _log?.Invoke($"[TtsService] Piper 合成异常: {ex.GetType().Name}: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _log?.Invoke($"[TtsService] {options.Engine} 合成异常: {ex.GetType().Name}: {ex.Message}");
+                throw;
+            }
 
             if (cachePath != null)
             {
@@ -194,7 +214,10 @@ namespace QuickDictForICC.Services
 
         private static string ComputeCacheKey(string text, TtsOptions options)
         {
-            string input = $"{options.Engine}|{options.Voice}|{options.Rate}|{text}";
+            const string cacheFormatVersion = "piper-file-output-v2";
+            string input = options.Engine == TtsEngineType.Piper
+                ? $"{cacheFormatVersion}|{options.Engine}|{options.Voice}|{options.Rate}|{options.PiperExecutablePath}|{options.PiperModelPath}|{text}"
+                : $"edge-v1|{options.Engine}|{options.Voice}|{options.Rate}|{text}";
             using (var sha = SHA256.Create())
             {
                 byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(input));

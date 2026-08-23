@@ -51,7 +51,10 @@
             <ScrollViewer x:Name="TextDefinitionScroll"
                           Visibility="Collapsed"
                           VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
+                          HorizontalScrollBarVisibility="Disabled"
+                          PanningMode="VerticalOnly"
+                          PanningDeceleration="0.001"
+                          PanningRatio="1">
                 <StackPanel Margin="16,8">
                     <TextBlock x:Name="PosText"
                                FontSize="20"

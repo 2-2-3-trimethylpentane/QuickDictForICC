@@ -268,7 +268,7 @@ namespace QuickDictForICC.Properties {
         }
         
         /// <summary>
-        ///   查找类似 未找到可用的词典文件。请在 QuickDict 设置中配置 ECDICT（ecdict.csv）或 MDict（.mdx）路径。 的本地化字符串。
+        ///   查找类似 未找到可用的词典文件。请在 QuickDict 设置中配置 ECDICT（.db 或 .csv）或 MDict（.mdx）路径。 的本地化字符串。
         /// </summary>
         public static string Message_DictionaryUnavailable {
             get {
@@ -408,6 +408,15 @@ namespace QuickDictForICC.Properties {
         public static string Message_SaveFailed_Format {
             get {
                 return ResourceManager.GetString("Message_SaveFailed_Format", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 保存内置 ECDICT 数据库默认路径失败 的本地化字符串。
+        /// </summary>
+        public static string Message_SaveMigratedSettingsFailed {
+            get {
+                return ResourceManager.GetString("Message_SaveMigratedSettingsFailed", resourceCulture);
             }
         }
         
@@ -799,7 +808,7 @@ namespace QuickDictForICC.Properties {
         }
         
         /// <summary>
-        ///   查找类似 ecdict.csv 格式离线词库 的本地化字符串。
+        ///   查找类似 默认使用插件内置 SQLite 数据库，也支持导入 CSV 文件 的本地化字符串。
         /// </summary>
         public static string Settings_EcDictPathDescription {
             get {
@@ -817,7 +826,7 @@ namespace QuickDictForICC.Properties {
         }
         
         /// <summary>
-        ///   查找类似 ECDICT 文件路径（ecdict.csv） 的本地化字符串。
+        ///   查找类似 ECDICT 文件路径（.db 或 .csv） 的本地化字符串。
         /// </summary>
         public static string Settings_EcDictPathLabel {
             get {

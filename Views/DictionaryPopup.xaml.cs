@@ -281,7 +281,11 @@ namespace QuickDictForICC.Views
             ResultContentHost.Content = new ScrollViewer
             {
                 Content = panel,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                PanningMode = PanningMode.VerticalOnly,
+                PanningDeceleration = 0.001,
+                PanningRatio = 1
             };
         }
 

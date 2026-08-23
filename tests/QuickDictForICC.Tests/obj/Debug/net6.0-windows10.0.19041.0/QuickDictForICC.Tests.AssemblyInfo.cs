@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("QuickDictForICC.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4934b36541267cbb9c04e86093656d62d9c0d38c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d10afae50e28f1790bedb1cdb48cb43ec19cf1df")]
 [assembly: System.Reflection.AssemblyProductAttribute("QuickDictForICC.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("QuickDictForICC.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

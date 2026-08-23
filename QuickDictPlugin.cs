@@ -174,16 +174,7 @@ namespace QuickDictForICC
 
         private void InitializeServices()
         {
-            if (string.IsNullOrWhiteSpace(_settings.EcDictPath) || !File.Exists(_settings.EcDictPath))
-            {
-                string pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                string builtInEcDict = Path.Combine(pluginDirectory, "ecdict", "ecdict.db");
-                if (!File.Exists(builtInEcDict))
-                    builtInEcDict = Path.Combine(pluginDirectory, "ecdict", "ecdict.csv");
-
-                if (File.Exists(builtInEcDict))
-                    _settings.EcDictPath = builtInEcDict;
-            }
+            ResolveEcDictPath();
 
             var ecDictService = new EcDictService(_settings.EcDictPath);
             var mdictService = new MDictService(
@@ -243,6 +234,61 @@ namespace QuickDictForICC
                     _host?.LogError(Resources.Message_CheckDictionaryAvailabilityFailed, ex);
                 }
             }, uiScheduler);
+        }
+
+        private void ResolveEcDictPath()
+        {
+            string pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (string.IsNullOrWhiteSpace(pluginDirectory))
+                return;
+
+            string builtInDatabasePath = Path.Combine(pluginDirectory, "ecdict", "ecdict.db");
+            string builtInCsvPath = Path.Combine(pluginDirectory, "ecdict", "ecdict.csv");
+            string configuredPath = _settings?.EcDictPath;
+
+            bool isLegacyBuiltInCsv = PathsEqual(configuredPath, builtInCsvPath);
+            bool shouldUseBuiltInDatabase = string.IsNullOrWhiteSpace(configuredPath)
+                || !File.Exists(configuredPath)
+                || isLegacyBuiltInCsv;
+
+            if (!shouldUseBuiltInDatabase)
+                return;
+
+            string resolvedPath = File.Exists(builtInDatabasePath)
+                ? builtInDatabasePath
+                : (File.Exists(builtInCsvPath) ? builtInCsvPath : null);
+
+            if (string.IsNullOrWhiteSpace(resolvedPath) || PathsEqual(configuredPath, resolvedPath))
+                return;
+
+            _settings.EcDictPath = resolvedPath;
+            try
+            {
+                // Persist the migration so the settings page and future starts use the DB directly.
+                SettingsManager.Save(_settings);
+            }
+            catch (Exception ex)
+            {
+                _host?.LogError(Resources.Message_SaveMigratedSettingsFailed, ex);
+            }
+        }
+
+        private static bool PathsEqual(string left, string right)
+        {
+            if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
+                return false;
+
+            try
+            {
+                return string.Equals(
+                    Path.GetFullPath(left),
+                    Path.GetFullPath(right),
+                    StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         private void NotifyIfDictionaryUnavailable()

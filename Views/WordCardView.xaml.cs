@@ -4,6 +4,7 @@ using QuickDictForICC.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -161,7 +162,8 @@ namespace QuickDictForICC.Views
 
             RefreshHeader(entry);
             RefreshDefinitionSection(entry);
-            // 单词卡中不显示词组、例句、近义词
+            // 查询窗口当前展示词性、释义、翻译和变形信息；单词卡同步这些内容。
+            // 单词卡中不显示词组、例句、近义词。
             // RefreshListSection(PhrasesSection, PhrasesPanel, entry.Phrases, Properties.Resources.WordCard_NoPhrases);
             // RefreshListSection(SentencesSection, SentencesPanel, entry.Sentences, Properties.Resources.WordCard_NoSentences);
             // RefreshListSection(SynonymsSection, SynonymsPanel, entry.Synonyms, Properties.Resources.WordCard_NoSynonyms);
@@ -219,7 +221,7 @@ namespace QuickDictForICC.Views
         {
             DefinitionPanel.Children.Clear();
 
-            var lines = ParseDefinitionLines(entry);
+            var lines = BuildContentLines(entry);
             if (lines.Count == 0)
             {
                 DefinitionPanel.Children.Add(CreateEmptyMessage(Properties.Resources.WordCard_NoDefinitions));
@@ -235,25 +237,43 @@ namespace QuickDictForICC.Views
             SetSectionVisibility(DefinitionSection, true);
         }
 
-        private IReadOnlyList<string> ParseDefinitionLines(IWordEntry entry)
+        private IReadOnlyList<string> BuildContentLines(IWordEntry entry)
         {
-            var source = entry.Definition;
-            if (string.IsNullOrWhiteSpace(source))
-            {
-                source = entry.Translation;
-            }
+            var lines = new List<string>();
+            AddLines(lines, entry.Pos);
 
-            if (string.IsNullOrWhiteSpace(source))
-            {
-                return new List<string>();
-            }
+            string definition = !string.IsNullOrWhiteSpace(entry.HtmlDefinition)
+                ? ConvertHtmlToText(entry.HtmlDefinition)
+                : entry.Definition;
+            AddLines(lines, definition);
+            AddLines(lines, entry.Translation);
+            AddLines(lines, entry.Exchange);
 
-            source = source.Replace("\\n", "\n");
-            return source
-                .Split('\n')
-                .Select(line => line.Trim())
-                .Where(line => !string.IsNullOrWhiteSpace(line))
-                .ToList();
+            return lines;
+        }
+
+        private static void AddLines(ICollection<string> lines, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+
+            foreach (string line in value.Replace("\\n", "\n").Split('\n'))
+            {
+                string trimmed = line.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                    lines.Add(trimmed);
+            }
+        }
+
+        private static string ConvertHtmlToText(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return string.Empty;
+
+            string text = Regex.Replace(html, @"<\s*(style|script)\b[^>]*>.*?<\s*/\s*\1\s*>", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            text = Regex.Replace(text, @"<\s*(br|/p|/div|/li|/tr)\s*/?\s*>", "\n", RegexOptions.IgnoreCase);
+            text = Regex.Replace(text, @"<[^>]+>", string.Empty);
+            return WebUtility.HtmlDecode(text);
         }
 
         private TextBlock CreateDefinitionLineBlock(string line)

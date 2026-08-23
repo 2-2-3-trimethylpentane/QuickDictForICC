@@ -195,7 +195,7 @@
     <value>词典</value>
   </data>
   <data name="Settings_EcDictPathLabel" xml:space="preserve">
-    <value>ECDICT 文件路径（ecdict.csv）</value>
+    <value>ECDICT 文件路径（.db 或 .csv）</value>
   </data>
   <data name="Settings_MDictPathLabel" xml:space="preserve">
     <value>MDict 词典路径（.mdx）</value>
@@ -207,7 +207,7 @@
     <value>ECDICT 文件路径</value>
   </data>
   <data name="Settings_EcDictPathDescription" xml:space="preserve">
-    <value>ecdict.csv 格式离线词库</value>
+    <value>默认使用插件内置 SQLite 数据库，也支持导入 CSV 文件</value>
   </data>
   <data name="Settings_MDictPathHeader" xml:space="preserve">
     <value>MDict 词典路径</value>
@@ -344,6 +344,9 @@
   <data name="Message_SaveFailed_Format" xml:space="preserve">
     <value>保存失败：{0}</value>
   </data>
+  <data name="Message_SaveMigratedSettingsFailed" xml:space="preserve">
+    <value>保存内置 ECDICT 数据库默认路径失败</value>
+  </data>
   <data name="Message_TtsServiceNotReady" xml:space="preserve">
     <value>TTS 服务尚未初始化</value>
   </data>
@@ -390,7 +393,7 @@
     <value>QuickDict</value>
   </data>
   <data name="Message_DictionaryUnavailable" xml:space="preserve">
-    <value>未找到可用的词典文件。请在 QuickDict 设置中配置 ECDICT（ecdict.csv）或 MDict（.mdx）路径。</value>
+    <value>未找到可用的词典文件。请在 QuickDict 设置中配置 ECDICT（.db 或 .csv）或 MDict（.mdx）路径。</value>
   </data>
   <data name="Message_PluginInitialized_Format" xml:space="preserve">
     <value>{0} 已初始化</value>

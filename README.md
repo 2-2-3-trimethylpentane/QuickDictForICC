@@ -13,7 +13,7 @@ QuickDictForICC 是 [InkCanvasForClass Community Edition](https://github.com/Ink
 
 - **单词查询**：在 ICC 工具栏点击“QuickDict 查词”按钮，输入英文单词即可查看释义。
 - **多词典支持**：
-  - [ECDICT](https://github.com/skywind3000/ECDICT) 离线 CSV 词典。
+- [ECDICT](https://github.com/skywind3000/ECDICT) 离线 SQLite 词典，也支持导入 CSV。
   - 用户导入的 MDict 词典（`.mdx`）及可选资源包（`.mdd`）。
 - **发音朗读**：
   - **Edge TTS**：在线微软神经网络语音，无需额外安装。
@@ -27,7 +27,8 @@ QuickDictForICC 是 [InkCanvasForClass Community Edition](https://github.com/Ink
 ### 1. ECDICT 数据（推荐）
 
 - 下载地址：<https://github.com/skywind3000/ECDICT>
-- 需要文件：`ecdict.csv`（完整版或精简版均可）。
+- 插件已内置 `ecdict/ecdict.db`，无需额外配置即可使用。
+- 如需导入其他数据，支持 `ecdict.csv`（完整版或精简版均可）；首次加载 CSV 时会自动生成同名 SQLite 缓存。
 - 在插件设置中选择该 CSV 文件路径。
 
 ### 2. MDict 词典（可选）
@@ -66,7 +67,7 @@ QuickDictForICC 是 [InkCanvasForClass Community Edition](https://github.com/Ink
 
 | 设置项 | 说明 |
 | --- | --- |
-| **ECDICT 路径** | `ecdict.csv` 文件完整路径，作为默认离线词库。 |
+| **ECDICT 路径** | `.db` 或 `.csv` 文件完整路径；默认使用插件自带的 `ecdict/ecdict.db`。 |
 | **MDict 词库路径** | `.mdx` 文件路径，可与 ECDICT 同时使用或单独使用。 |
 | **MDict 资源路径** | `.mdd` 文件路径，可选，用于加载词典内的媒体资源。 |
 | **TTS 引擎** | 选择 `Edge`（在线）或 `Piper`（本地离线）。 |

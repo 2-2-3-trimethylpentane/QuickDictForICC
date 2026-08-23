@@ -14,7 +14,7 @@ QuickDictForICC 是 [InkCanvasForClass Community Edition](https://github.com/Ink
 - **单词查询**：在 ICC 工具栏点击“QuickDict 查词”按钮，输入英文单词即可查看释义。
 - **多词典支持**：
 - [ECDICT](https://github.com/skywind3000/ECDICT) 离线 SQLite 词典，也支持导入 CSV。
-  - 用户导入的 MDict 词典（`.mdx`）及可选资源包（`.mdd`）。
+  - （实验性）用户导入的 MDict 词典（`.mdx`）及可选资源包（`.mdd`）。
 - **发音朗读**：
   - **Edge TTS**：在线微软神经网络语音，无需额外安装。
   - **Piper TTS**：本地离线神经网络语音，需自行下载 Piper 可执行文件与语音模型。
@@ -80,7 +80,7 @@ QuickDictForICC 是 [InkCanvasForClass Community Edition](https://github.com/Ink
 
 ## 构建与打包
 
-本地构建请使用 Release 配置：
+本地构建请使用 Release 配置：  
 
 ```powershell
 dotnet build QuickDictForICC.csproj -c Release
@@ -115,10 +115,23 @@ QuickDictForICC/
 
 ## 已知限制
 
-- 首次使用必须至少配置 ECDICT 或 MDict 中的一个，否则插件会提示“未找到可用的词典文件”。
-- Edge TTS 需要联网；Piper TTS 需要正确配置可执行文件与模型。
-- 未提供 ICC 宿主环境时，仅完成编译与打包验证，无法在实际 ICC 中运行测试。
+- 首次使用必须至少配置 ECDICT 或 MDict 中的一个，否则插件会提示“未找到可用的词典文件”。  
+- Edge TTS 需要联网；Piper TTS 需要正确配置可执行文件与模型。  
+- 未提供 ICC 宿主环境时，仅完成编译与打包验证，无法在实际 ICC 中运行测试。  
+
+
+---
+
+## 特别鸣谢  
+
+本项目的默认词源来自[skywind3000/ECDICT](https://github.com/skywind3000/ECDICT)，十分感谢 skywind3000 为开源社区做出的贡献。
+
 
 ## License
 
-本项目采用 GPL-3.0 许可证，详见 [LICENSE](LICENSE)。
+本项目采用 GPL-3.0 许可证，详见 [LICENSE](LICENSE)。  
+
+© 2026 2,2,3-三甲基戊烷 版权所有
+
+
+
